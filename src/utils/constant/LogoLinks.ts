@@ -16,9 +16,9 @@ export const logoLinks = [
   },
   {
     name: 'Twitter',
-    href: '',
+    href: 'https://x.com/AfrinoRizky/',
     icon: Twitter,
-    content: '',
+    content: 'Twitter',
   },
   {
     name: 'Instagram',

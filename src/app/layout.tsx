@@ -18,6 +18,10 @@ export const metadata: Metadata = {
   authors: [{ name: "Rizky Mustafa Afrino", url: "https://afrino.vercel.app" }],
   creator: "Rizky Mustafa Afrino",
 
+  verification: {
+    google: "JZDm8fS_tvLpavVAgJxpWEk-hAzqgMCkJDurmHgBe48",
+  },
+
   // Open Graph (Facebook, WhatsApp, LinkedIn, Discord)
   openGraph: {
     type: "website",

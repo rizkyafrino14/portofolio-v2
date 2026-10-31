@@ -1,335 +1,193 @@
 'use client'
 
-import TextSection from '@/components/common/TextSection'
-import { logoLinks } from '@/utils/constant/LogoLinks'
-import { motion, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
-import { FaPaperPlane, FaWhatsapp } from 'react-icons/fa'
-import { IoClose } from 'react-icons/io5'
-import { MdPerson, MdMessage } from 'react-icons/md'
+import { motion } from 'framer-motion'
+import { FaWhatsapp } from 'react-icons/fa'
+import { MdPerson } from 'react-icons/md'
+import TextSection from '@/components/common/TextSection'
+import TiltCard from '@/components/common/TiltCard'
+import { logoLinks } from '@/utils/constant/LogoLinks'
+import { useT, type TKey } from '@/lib/i18n'
+import { setLink } from '@/lib/sceneLink'
+import { cn } from '@/utils/styles/cn'
 
 const YOUR_WHATSAPP = '6282326744030'
 
-// Koordinat lokasi company
-const COMPANY_LAT = -7.467444
-const COMPANY_LNG = 110.589806
-const COMPANY_NAME = 'My Location'
+// Hanya area umum (kabupaten), bukan koordinat presisi, demi privasi.
+const AREA_NAME = 'Semarang Regency, Central Java'
+const AREA_QUERY = encodeURIComponent('Kabupaten Semarang, Jawa Tengah')
 
-type FormState = {
-  name: string
-  message: string
-}
-
-type Status = 'idle' | 'loading' | 'success'
+const topics: { key: 'hire' | 'collab' | 'hello'; icon: string }[] = [
+  { key: 'hire', icon: '💼' },
+  { key: 'collab', icon: '🤝' },
+  { key: 'hello', icon: '👋' },
+]
 
 export default function Contact() {
-  const [isOpen, setIsOpen] = useState(false)
-  const [form, setForm] = useState<FormState>({ name: '', message: '' })
-  const [status, setStatus] = useState<Status>('idle')
-  const [focused, setFocused] = useState<string | null>(null)
+  const t = useT()
+  const [name, setName] = useState('')
+  const [message, setMessage] = useState('')
+  const [topic, setTopic] = useState<string | null>(null)
+  const [sent, setSent] = useState(false)
 
-  const googleMapsUrl = `https://www.google.com/maps?q=${COMPANY_LAT},${COMPANY_LNG}`
-  const embedUrl = `https://maps.google.com/maps?q=${COMPANY_LAT},${COMPANY_LNG}&z=17&output=embed`
+  const valid = name.trim() && message.trim()
+  const text = `${t('con.greeting')} *${name.trim() || '…'}*.\n\n${message.trim() || '…'}`
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
+  const pickTopic = (key: 'hire' | 'collab' | 'hello') => {
+    setTopic(key)
+    setMessage(t(`con.p.${key}` as TKey))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const send = (e: React.FormEvent) => {
     e.preventDefault()
-    setStatus('loading')
-
-    // Format pesan WhatsApp
-    const text = encodeURIComponent(
-      `Halo, nama saya *${form.name}*.\n\n${form.message}`
-    )
-    const waUrl = `https://wa.me/${YOUR_WHATSAPP}?text=${text}`
-
-    setTimeout(() => {
-      window.open(waUrl, '_blank')
-      setStatus('success')
-      setForm({ name: '', message: '' })
-      setTimeout(() => {
-        setStatus('idle')
-        setIsOpen(false)
-      }, 2000)
-    }, 600)
+    if (!valid) return
+    const url = `https://wa.me/${YOUR_WHATSAPP}?text=${encodeURIComponent(text)}`
+    window.open(url, '_blank', 'noopener,noreferrer')
+    setSent(true)
+    setTimeout(() => setSent(false), 3500)
   }
 
-  const isValid = form.name.trim() && form.message.trim()
+  const phoneOn = () => setLink({ phone: true })
+  const phoneOff = () => setLink({ phone: false })
 
   return (
-    <div className="xl:px-64">
-      <TextSection icon="📲" text="Find Me On." classNames="mb-10" />
+    <div>
+      <TextSection icon="📲" text={t('con.title')} eyebrow={`🐶 ${t('con.eyebrow')}`} />
 
-      {/* Social Links */}
-      <div className="flex flex-row flex-wrap justify-center gap-10 2xl:justify-start">
-        {logoLinks.map((data, index) => {
-          const Icon = data.icon
-          return (
-            <motion.a
-              whileInView={{ scale: 1 }}
-              initial={{ scale: 0 }}
-              transition={{ duration: 0.3 }}
-              viewport={{ once: true }}
-              className="flex h-16 w-52 cursor-pointer items-center gap-5 rounded-xl border-2 border-black-primary bg-white p-3 text-black-primary shadow-button-card transition-all duration-200 hover:scale-105 hover:shadow-image-card"
-              key={index}
-              href={data.href}
-            >
-              <Icon />
-              <p className="font-semibold">{data.name}</p>
-            </motion.a>
-          )
-        })}
-      </div>
-
-      {/* Tombol Hubungi Saya */}
-      <motion.div
-        className="mt-16 flex justify-center"
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        viewport={{ once: true }}
-      >
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => setIsOpen(true)}
-          className="flex items-center gap-3 rounded-2xl border-2 border-black-primary bg-yellow-primary px-8 py-4 font-bold text-black-primary shadow-button-card transition-all hover:bg-orange-primary"
+      {/* satu kolom di kiri (lg+) supaya jendela & ponsel 3D tetap terlihat */}
+      <div className="mt-8 flex flex-col gap-5 lg:max-w-lg">
+        <motion.form
+          onSubmit={send}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="panel flex flex-col gap-5 p-5 md:p-6"
         >
-          <FaWhatsapp className="text-2xl text-green-600" />
-          <span className="text-lg">Hubungi Saya</span>
-        </motion.button>
-      </motion.div>
+          <p className="text-sm text-muted">{t('con.sub')}</p>
 
-      {/* Map Section */}
-      <motion.div
-        whileInView={{ opacity: 1, y: 0 }}
-        initial={{ opacity: 0, y: 40 }}
-        transition={{ duration: 0.5 }}
-        viewport={{ once: true }}
-        className="mt-14"
-      >
-        <TextSection icon="📍" text="My Location." classNames="mb-6" />
-        <div className="overflow-hidden rounded-2xl border-2 border-black-primary shadow-button-card">
-          <iframe
-            src={embedUrl}
-            width="100%"
-            height="400"
-            style={{ border: 0, display: 'block' }}
-            allowFullScreen
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-            title={`Lokasi ${COMPANY_NAME}`}
-          />
-          <div className="flex items-center justify-between bg-yellow-primary px-5 py-3">
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">🏢</span>
-              <div>
-                <p className="font-bold text-black-primary">{COMPANY_NAME}</p>
-                <p className="text-xs text-black-primary/70">
-                  {COMPANY_LAT.toFixed(6)}, {COMPANY_LNG.toFixed(6)}
-                </p>
+          {/* topik cepat */}
+          <fieldset>
+            <legend className="mb-2 text-xs font-bold uppercase tracking-wider text-muted">{t('con.topics')}</legend>
+            <div className="flex flex-wrap gap-2">
+              {topics.map(({ key, icon }) => (
+                <button
+                  type="button"
+                  key={key}
+                  onClick={() => pickTopic(key)}
+                  aria-pressed={topic === key}
+                  className={cn(
+                    'rounded-full border px-3.5 py-1.5 text-sm font-semibold transition-colors',
+                    topic === key
+                      ? 'border-ink bg-ink text-paper'
+                      : 'border-line/30 bg-card2 text-ink hover:bg-sun',
+                  )}
+                >
+                  {icon} {t(`con.t.${key}` as TKey)}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+
+          <label className="flex flex-col gap-1.5 text-sm font-bold text-ink">
+            {t('con.name')}
+            <span className="flex items-center gap-2 rounded-2xl border-2 border-transparent bg-card2 px-3 py-2.5 focus-within:border-ink">
+              <MdPerson className="shrink-0 text-xl text-muted" />
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onFocus={phoneOn}
+                onBlur={phoneOff}
+                placeholder={t('con.namePh')}
+                className="w-full bg-transparent text-sm font-normal outline-none"
+                required
+              />
+            </span>
+          </label>
+
+          <label className="flex flex-col gap-1.5 text-sm font-bold text-ink">
+            {t('con.msg')}
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onFocus={phoneOn}
+              onBlur={phoneOff}
+              placeholder={t('con.msgPh')}
+              rows={4}
+              className="resize-none rounded-2xl border-2 border-transparent bg-card2 px-3 py-2.5 text-sm font-normal outline-none focus:border-ink"
+              required
+            />
+            <span className="text-right text-xs font-normal text-muted">
+              {message.length} {t('con.chars')}
+            </span>
+          </label>
+
+          {/* pratinjau gelembung WhatsApp */}
+          <div>
+            <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted">{t('con.preview')}</p>
+            <div className="flex justify-end rounded-2xl bg-[#e7dfd2] p-3 dark:bg-[#1b2420]">
+              <div className="max-w-[85%] whitespace-pre-line rounded-2xl rounded-tr-sm bg-[#d9fdd3] px-3.5 py-2 text-sm text-[#1f2c27] shadow-sm dark:bg-[#005c4b] dark:text-[#e9edef]">
+                {t('con.greeting')} <b>{name.trim() || '…'}</b>.
+                {'\n\n'}
+                {message.trim() || '…'}
               </div>
             </div>
+          </div>
+
+          <button type="submit" disabled={!valid} className="btn-primary disabled:cursor-not-allowed disabled:opacity-50">
+            {sent ? (
+              <>✅ {t('con.done')}</>
+            ) : (
+              <>
+                <FaWhatsapp className="text-xl" /> {t('con.send')}
+              </>
+            )}
+          </button>
+          {sent && <p className="-mt-2 text-center text-xs text-muted">{t('con.doneSub')}</p>}
+        </motion.form>
+
+        {/* sosial + lokasi */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="panel flex flex-col gap-4 p-5"
+        >
+          <p className="text-xs font-bold uppercase tracking-wider text-muted">{t('con.social')}</p>
+          <div className="flex flex-wrap gap-3">
+            {logoLinks.map((l) => {
+              const Icon = l.icon
+              return (
+                <TiltCard key={l.name} max={14}>
+                  <a
+                    href={l.href}
+                    target={l.href.startsWith('http') ? '_blank' : undefined}
+                    rel="noreferrer"
+                    aria-label={l.name}
+                    title={l.name}
+                    className="grid h-12 w-12 place-items-center rounded-2xl bg-sun text-black transition-colors hover:bg-accent hover:text-white [&_svg]:!h-6 [&_svg]:!w-6"
+                  >
+                    <Icon />
+                  </a>
+                </TiltCard>
+              )
+            })}
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line/20 pt-4 text-sm">
+            <span className="text-muted">
+              {t('con.located')} <b className="text-ink">📍 {AREA_NAME}</b>
+            </span>
             <a
-              href={googleMapsUrl}
+              href={`https://www.google.com/maps/search/?api=1&query=${AREA_QUERY}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 rounded-xl border-2 border-black-primary bg-white px-4 py-2 text-sm font-semibold text-black-primary transition-all hover:bg-orange-primary"
+              className="font-bold text-accent hover:underline"
             >
-              Buka Maps →
+              {t('con.maps')} →
             </a>
           </div>
-        </div>
-      </motion.div>
-
-      {/* Modal Popup Form */}
-      <AnimatePresence>
-        {isOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              key="backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => status !== 'loading' && setIsOpen(false)}
-              style={{
-                position: 'fixed',
-                inset: 0,
-                zIndex: 9998,
-                backgroundColor: 'rgba(0,0,0,0.55)',
-                backdropFilter: 'blur(4px)',
-                WebkitBackdropFilter: 'blur(4px)',
-              }}
-            />
-
-            {/* Centering wrapper */}
-            <div
-              style={{
-                position: 'fixed',
-                inset: 0,
-                zIndex: 9999,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                pointerEvents: 'none',
-                padding: '1rem',
-              }}
-            >
-              <motion.div
-                key="modal"
-                initial={{ opacity: 0, scale: 0.85, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.85, y: 20 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                style={{ pointerEvents: 'auto', width: '100%', maxWidth: '440px' }}
-                className="rounded-2xl border-2 border-black-primary bg-white shadow-button-card"
-              >
-                {/* Header */}
-                <div className="flex items-center justify-between rounded-t-2xl border-b-2 border-black-primary bg-yellow-primary px-6 py-4">
-                  <div className="flex items-center gap-2">
-                    <FaWhatsapp className="text-2xl text-green-600" />
-                    <h2 className="text-xl font-bold text-black-primary">Hubungi Saya</h2>
-                  </div>
-                  <button
-                    onClick={() => status !== 'loading' && setIsOpen(false)}
-                    className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-black-primary bg-white text-black-primary transition-all hover:bg-orange-primary"
-                  >
-                    <IoClose className="text-lg" />
-                  </button>
-                </div>
-
-                {/* Body */}
-                <div className="p-6">
-                  {status === 'success' ? (
-                    /* Success State */
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="flex flex-col items-center gap-3 py-8"
-                    >
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.1 }}
-                        className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-black-primary bg-yellow-primary text-3xl"
-                      >
-                        ✅
-                      </motion.div>
-                      <p className="text-center text-lg font-bold text-black-primary">
-                        Pesan Terkirim!
-                      </p>
-                      <p className="text-center text-sm text-gray-500">
-                        WhatsApp sudah terbuka. Terima kasih sudah menghubungi saya!
-                      </p>
-                    </motion.div>
-                  ) : (
-                    /* Form */
-                    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-
-                      {/* Info */}
-                      <div className="flex items-center gap-2 rounded-xl border-2 border-green-200 bg-green-50 px-3 py-2">
-                        <FaWhatsapp className="shrink-0 text-xl text-green-600" />
-                        <p className="text-xs text-green-700">
-                          Pesan akan dikirim langsung ke WhatsApp saya
-                        </p>
-                      </div>
-
-                      {/* Nama */}
-                      <div className="flex flex-col gap-1">
-                        <label className="text-sm font-semibold text-black-primary">
-                          Nama
-                        </label>
-                        <div
-                          className={`flex items-center gap-2 rounded-xl border-2 bg-gray-50 px-3 py-2 transition-all ${
-                            focused === 'name'
-                              ? 'border-black-primary shadow-button-card'
-                              : 'border-gray-200'
-                          }`}
-                        >
-                          <MdPerson className="shrink-0 text-xl text-gray-400" />
-                          <input
-                            type="text"
-                            name="name"
-                            value={form.name}
-                            onChange={handleChange}
-                            onFocus={() => setFocused('name')}
-                            onBlur={() => setFocused(null)}
-                            placeholder="Nama kamu"
-                            className="w-full bg-transparent text-sm text-black-primary outline-none placeholder:text-gray-400"
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      {/* Pesan */}
-                      <div className="flex flex-col gap-1">
-                        <label className="text-sm font-semibold text-black-primary">
-                          Pesan
-                        </label>
-                        <div
-                          className={`flex gap-2 rounded-xl border-2 bg-gray-50 px-3 py-2 transition-all ${
-                            focused === 'message'
-                              ? 'border-black-primary shadow-button-card'
-                              : 'border-gray-200'
-                          }`}
-                        >
-                          <MdMessage className="mt-0.5 shrink-0 text-xl text-gray-400" />
-                          <textarea
-                            name="message"
-                            value={form.message}
-                            onChange={handleChange}
-                            onFocus={() => setFocused('message')}
-                            onBlur={() => setFocused(null)}
-                            placeholder="Tulis pesanmu di sini..."
-                            rows={4}
-                            className="w-full resize-none bg-transparent text-sm text-black-primary outline-none placeholder:text-gray-400"
-                            required
-                          />
-                        </div>
-                        <p className="text-right text-xs text-gray-400">
-                          {form.message.length} karakter
-                        </p>
-                      </div>
-
-                      {/* Submit */}
-                      <motion.button
-                        type="submit"
-                        disabled={!isValid || status === 'loading'}
-                        whileHover={isValid ? { scale: 1.02 } : {}}
-                        whileTap={isValid ? { scale: 0.98 } : {}}
-                        className={`flex items-center justify-center gap-2 rounded-xl border-2 border-black-primary py-3 font-bold text-black-primary shadow-button-card transition-all ${
-                          isValid
-                            ? 'cursor-pointer bg-yellow-primary hover:bg-orange-primary'
-                            : 'cursor-not-allowed bg-gray-100 opacity-50'
-                        }`}
-                      >
-                        {status === 'loading' ? (
-                          <>
-                            <motion.span
-                              animate={{ rotate: 360 }}
-                              transition={{ repeat: Infinity, duration: 0.8, ease: 'linear' }}
-                              className="inline-block h-4 w-4 rounded-full border-2 border-black-primary border-t-transparent"
-                            />
-                            Membuka WhatsApp...
-                          </>
-                        ) : (
-                          <>
-                            <FaWhatsapp className="text-xl text-green-600" />
-                            Kirim via WhatsApp
-                          </>
-                        )}
-                      </motion.button>
-                    </form>
-                  )}
-                </div>
-              </motion.div>
-            </div>
-          </>
-        )}
-      </AnimatePresence>
+        </motion.div>
+      </div>
     </div>
   )
 }

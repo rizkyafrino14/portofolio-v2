@@ -7,241 +7,171 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import ExperienceTimeline from '@/components/common/ExperienceTimelime'
 import { experience } from '@/utils/constant/Experience'
-import { useState, useCallback } from 'react'
+import { useState, useEffect } from 'react'
+import { useT, rich } from '@/lib/i18n'
+import { playSfx } from '@/lib/settings'
 
-// ✏️ Edit persentase skill di sini yoman
+// ✏️ Edit persentase skill di sini
 const skillProficiency: Record<string, number> = {
   JavaScript: 90,
-  Bootstrap:  90,
-  Tailwinds:  85, 
+  Bootstrap: 90,
+  Tailwinds: 85,
   TypeScript: 82,
-  React:      80,
-  NextJS:     75,
-  Php:        20,
-  MySQL:      20,
+  React: 80,
+  NextJS: 75,
+  Laravel: 50,
+  Php: 20,
+  MySQL: 20,
 }
 
-const getBadge = (pct: number) => {
-  if (pct >= 80) return { label: 'Expert',     color: 'bg-emerald-100 text-emerald-700', bar: '#10b981' }
-  if (pct >= 60) return { label: 'Proficient', color: 'bg-blue-100 text-blue-700',       bar: '#3b82f6' }
-  return           { label: 'Learning',    color: 'bg-amber-100 text-amber-700',      bar: '#f59e0b' }
-}
+const level = (pct: number) =>
+  pct >= 80
+    ? { k: 'high', cls: 'bg-leaf/40 text-ink', bar: 'rgb(var(--leaf))' }
+    : pct >= 60
+    ? { k: 'mid', cls: 'bg-sun/50 text-ink', bar: 'rgb(var(--sun))' }
+    : { k: 'low', cls: 'bg-accent/25 text-ink', bar: 'rgb(var(--accent))' }
 
-// 🔊 Ganti file audio yang kamu taruh di /public/sounds/
-// Format yang didukung: .mp3 .wav .ogg
 const SOUND_URL = '/sounds/mario.mp3'
 
 type SelectedTech = { name: string; pct: number } | null
 
 export default function About() {
+  const t = useT()
   const [selected, setSelected] = useState<SelectedTech>(null)
 
-  const playSound = useCallback(() => {
-    const audio = new Audio(SOUND_URL)
-    audio.volume = 0.5
-    audio.play().catch(() => {
-      // browser block autoplay — diabaikan saja
-    })
-  }, [])
+  useEffect(() => {
+    if (!selected) return
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setSelected(null)
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [selected])
 
-  const handleCardClick = (name: string, pct: number) => {
-    playSound()
+  const pick = (name: string, pct: number) => {
+    playSfx(SOUND_URL, 0.8)
     setSelected({ name, pct })
   }
 
-  const fadeInAnimationVariants = {
-    hidden:  { opacity: 0, y: 100 },
-    animate: (index: number) => ({
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.05 * index },
-    }),
-  }
+  const SelectedIcon = selected && techIcons.find((x) => x.name === selected.name)?.icons
+  const lvl = selected ? level(selected.pct) : null
 
   return (
-    <section className="text-black-primary">
-      <TextSection icon="😎" text="it's More About Me." />
+    <section>
+      <TextSection icon="😎" text={t('about.title')} eyebrow={`🦊 ${t('about.eyebrow')}`} />
 
       {/* Bio */}
-      <div className="mx-auto mb-12 mt-8 flex flex-col items-center justify-center md:gap-10 lg:flex-row">
-        <div className="relative aspect-auto h-60 w-60 items-baseline justify-center rounded-3xl border-4 border-black-primary bg-yellow-primary object-cover shadow-image-card shadow-black-primary md:h-96 md:w-1/2 xl:w-96">
-          <div className="absolute right-0 flex h-12 w-16 translate-x-8 translate-y-6 items-center justify-center rounded-t-xl rounded-br-xl border-4 border-black-primary bg-orange-primary shadow-image-card shadow-black-primary md:h-16 md:w-20">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 md:h-12 md:w-12" viewBox="0 0 24 24">
-              <g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}>
-                <path strokeDasharray={48} strokeDashoffset={48} d="M17 9v9a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3V9z">
-                  <animate fill="freeze" attributeName="stroke-dashoffset" dur="0.6s" values="48;0" />
-                </path>
-                <path strokeDasharray={14} strokeDashoffset={14} d="M17 14H20C20.55 14 21 13.55 21 13V10C21 9.45 20.55 9 20 9H17">
-                  <animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="14;28" />
-                </path>
-              </g>
-              <mask id="lineMdCoffeeLoop0">
-                <path fill="none" stroke="#fff" strokeWidth={2} d="M8 0c0 2-2 2-2 4s2 2 2 4-2 2-2 4 2 2 2 4M12 0c0 2-2 2-2 4s2 2 2 4-2 2-2 4 2 2 2 4M16 0c0 2-2 2-2 4s2 2 2 4-2 2-2 4 2 2 2 4">
-                  <animateMotion calcMode="linear" dur="3s" path="M0 0v-8" repeatCount="indefinite" />
-                </path>
-              </mask>
-              <rect width={24} height={0} y={7} fill="currentColor" mask="url(#lineMdCoffeeLoop0)">
-                <animate fill="freeze" attributeName="y" begin="0.8s" dur="0.6s" values="7;2" />
-                <animate fill="freeze" attributeName="height" begin="0.8s" dur="0.6s" values="0;5" />
-              </rect>
-            </svg>
-          </div>
-          <Image
-            src={'/me.png'}
-            alt="Picture of the author"
-            width={1000}
-            height={1000}
-            className="aspect-auto h-full w-full rounded-lg object-cover px-8"
-          />
+      <div className="mt-8 grid gap-5 md:grid-cols-12">
+        <motion.div
+          initial={{ opacity: 0, rotate: -3 }}
+          whileInView={{ opacity: 1, rotate: -2 }}
+          viewport={{ once: true }}
+          className="relative mx-auto aspect-square w-64 overflow-hidden rounded-[2rem] border-2 border-ink bg-sun shadow-pop md:col-span-4 md:w-full"
+        >
+          <Image src="/me.png" alt="Rizky" width={800} height={800} className="h-full w-full object-cover" />
+          <span className="sticker absolute bottom-3 left-3">☕ {t('about.coffee')}</span>
+        </motion.div>
+
+        <div className="panel flex flex-col justify-center gap-4 p-6 md:col-span-8 md:p-8">
+          <p className="text-base leading-relaxed text-muted md:text-lg">{rich(t('about.p1'))}</p>
+          <p className="text-base leading-relaxed text-muted md:text-lg">{rich(t('about.p2'))}</p>
         </div>
-        <p className="mt-5 text-justify text-base text-secondary-text md:mt-0 lg:w-1/2 xl:text-lg">
-          I am a Software Engineering (RPL) student from <b>SMK Negeri 1 Tengaran</b>. 
-          I possess a strong understanding of <b>HTML, CSS, JavaScript,</b> and web development, 
-          along with hands-on experience in <b>software development</b> projects using <b>Bootstrap</b> and <b>Tailwind CSS</b>. 
-          My current focus is on deepening my knowledge in the field of <b>web & android development</b>.
-          <br />
-          <br />
-          I have hands-on experience with <b>ReactJS</b> and <b>NextJS</b> for the frontend. 
-          I am also currently learning about <b>Artificial Intelligence (AI)</b> for development technology.
-        </p>
       </div>
 
       {/* Experience */}
-      <TextSection icon="💼" text="My Experience" classNames="mb-10 text-center" />
-      <div className="mx-auto mb-10 flex grid-cols-9 flex-col p-2 text-blue-50 md:grid">
-        {experience.map((data, index: number) => (
-          <ExperienceTimeline position={index % 2 == 1} key={index} {...data} />
+      <TextSection icon="💼" text={t('about.experience')} classNames="mt-20" />
+      <ol className="relative mt-8 flex flex-col gap-5 before:absolute before:bottom-4 before:left-[17px] before:top-4 before:w-0.5 before:bg-line/30 md:before:left-[21px]">
+        {experience.map((data, i) => (
+          <ExperienceTimeline key={i} {...data} />
         ))}
-      </div>
+      </ol>
 
       {/* Tech Stack */}
-      <TextSection icon="🎯" classNames="mt-10 xl:mt-28" text="Tech Stack That I Use." />
-      <p className="mt-2 text-center text-sm text-secondary-text">
-        Click the card to see the mastery level 🔊
-      </p>
-      <div className="mt-5 flex flex-wrap justify-center justify-items-center gap-5 xl:gap-10 xl:px-40">
+      <TextSection icon="🎯" text={t('about.stack')} classNames="mt-20" />
+      <p className="mt-3 text-sm text-muted">{t('about.stackHint')} 🔊</p>
+      <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
         {techIcons.map((data, index) => {
           const Icons = data.icons
           const pct = skillProficiency[data.name]
+          const clickable = pct !== undefined
           return (
-            <motion.div
-              key={index}
-              initial="hidden"
-              whileInView="animate"
-              variants={fadeInAnimationVariants}
+            <motion.button
+              key={data.name}
+              type="button"
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              custom={index}
-              onClick={() => pct !== undefined && handleCardClick(data.name, pct)}
+              transition={{ delay: index * 0.04 }}
+              whileHover={clickable ? { y: -4, rotate: index % 2 ? 1.5 : -1.5 } : undefined}
+              onClick={() => clickable && pick(data.name, pct)}
               className={twMerge(
-                'flex h-24 w-24 flex-col items-center justify-center gap-y-2 rounded-2xl border-2 bg-white duration-150 hover:scale-105 hover:border-black-primary hover:shadow-button-card md:h-36 md:w-36 md:p-4',
-                pct !== undefined ? 'cursor-pointer' : 'cursor-default',
+                'panel flex flex-col items-center justify-center gap-3 p-6',
+                clickable ? 'cursor-pointer hover:border-ink' : 'cursor-default',
               )}
             >
-              <Icons className="text-4xl text-black-primary md:text-6xl" />
-              <p className="text-base font-bold text-black-primary md:text-xl">{data.name}</p>
-            </motion.div>
+              <Icons className="text-5xl text-ink md:text-6xl" />
+              <span className="font-bold text-ink">{data.name}</span>
+            </motion.button>
           )
         })}
       </div>
 
       {/* Modal */}
       <AnimatePresence>
-        {selected && (
-          <>
-            {/* Backdrop */}
+        {selected && lvl && (
+          <motion.div
+            key="backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelected(null)}
+            data-ui
+            className="fixed inset-0 z-[9998] grid place-items-center bg-black/55 p-4 backdrop-blur-sm"
+          >
             <motion.div
-              key="backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSelected(null)}
-              style={{
-                position: 'fixed',
-                top: 0, left: 0, right: 0, bottom: 0,
-                zIndex: 9998,
-                backgroundColor: 'rgba(0,0,0,0.55)',
-                backdropFilter: 'blur(4px)',
-                WebkitBackdropFilter: 'blur(4px)',
-              }}
-            />
-
-            {/* Centering wrapper */}
-            <div
-              style={{
-                position: 'fixed',
-                top: 0, left: 0, right: 0, bottom: 0,
-                zIndex: 9999,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                pointerEvents: 'none',
-              }}
+              role="dialog"
+              aria-modal="true"
+              aria-label={selected.name}
+              initial={{ opacity: 0, scale: 0.85 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.85 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-xs rounded-3xl border-2 border-ink bg-card p-6 shadow-pop"
             >
-              <motion.div
-                key="modal"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                style={{ pointerEvents: 'auto', width: '288px' }}
-                className="rounded-2xl border-2 border-black-primary bg-white p-6 shadow-button-card"
-              >
-                {/* Header */}
-                <div className="mb-5 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    {(() => {
-                      const tech = techIcons.find((t) => t.name === selected.name)
-                      if (!tech) return null
-                      const Icon = tech.icons
-                      return <Icon className="text-3xl text-black-primary" />
-                    })()}
-                    <h2 className="text-xl font-bold text-black-primary">{selected.name}</h2>
-                  </div>
-                  <button
-                    onClick={() => setSelected(null)}
-                    className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-black-primary text-sm font-bold text-black-primary hover:bg-yellow-primary"
-                  >
-                    ✕
-                  </button>
+              <div className="mb-5 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {SelectedIcon && <SelectedIcon className="text-3xl text-ink" />}
+                  <h2 className="font-display text-2xl font-bold text-ink">{selected.name}</h2>
                 </div>
+                <button
+                  onClick={() => setSelected(null)}
+                  aria-label="Close"
+                  className="grid h-8 w-8 place-items-center rounded-full border-2 border-ink text-sm font-bold text-ink hover:bg-sun"
+                >
+                  ✕
+                </button>
+              </div>
 
-                {/* Persentase */}
-                <p className="mb-3 text-center text-6xl font-bold text-black-primary">
-                  {selected.pct}%
-                </p>
+              <p className="mb-3 text-center font-display text-6xl font-bold text-ink">{selected.pct}%</p>
 
-                {/* Progress bar */}
-                <div className="mb-4 h-4 w-full overflow-hidden rounded-full border-2 border-black-primary bg-gray-100">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${selected.pct}%` }}
-                    transition={{ duration: 0.8, ease: 'easeOut' }}
-                    style={{
-                      backgroundColor: getBadge(selected.pct).bar,
-                      height: '100%',
-                      borderRadius: '9999px',
-                    }}
-                  />
-                </div>
+              <div className="mb-4 h-4 w-full overflow-hidden rounded-full border-2 border-ink bg-card2">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${selected.pct}%` }}
+                  transition={{ duration: 0.8, ease: 'easeOut' }}
+                  style={{ backgroundColor: lvl.bar, height: '100%' }}
+                />
+              </div>
 
-                {/* Badge */}
-                <div className="flex justify-center">
-                  <span className={twMerge('rounded-full px-4 py-1 text-sm font-semibold', getBadge(selected.pct).color)}>
-                    {getBadge(selected.pct).label}
-                  </span>
-                </div>
-
-                {/* Deskripsi */}
-                <p className="mt-3 text-center text-xs text-secondary-text">
-                  {selected.pct >= 80
-                    ? 'Sangat menguasai dan sering digunakan di project nyata.'
-                    : selected.pct >= 60
-                    ? 'Cukup menguasai dan bisa digunakan untuk project.'
-                    : 'Masih dalam tahap belajar dan eksplorasi.'}
-                </p>
-              </motion.div>
-            </div>
-          </>
+              <div className="flex justify-center">
+                <span className={twMerge('rounded-full px-4 py-1 text-sm font-bold', lvl.cls)}>
+                  {t(`about.lvl.${lvl.k}` as 'about.lvl.high')}
+                </span>
+              </div>
+              <p className="mt-3 text-center text-xs text-muted">
+                {t(`about.lvl.${lvl.k}.d` as 'about.lvl.high.d')}
+              </p>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </section>

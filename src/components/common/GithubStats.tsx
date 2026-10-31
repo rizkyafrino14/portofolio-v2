@@ -3,14 +3,14 @@ import { useTheme } from 'next-themes'
 import GitHubCalendar from 'react-github-calendar'
 
 export function GithubStats() {
-  const { theme } = useTheme()
+  const { resolvedTheme } = useTheme()
   return (
-    <div className="cursor-pointer rounded-lg border-4 border-black-primary bg-white p-4 shadow-image-card duration-150 hover:shadow-button-card hover:shadow-black-primary dark:bg-black">
+    <div className="panel max-w-full overflow-x-auto p-4">
       <GitHubCalendar
         username="rizkyafrino14"
-        blockSize={15}
-        blockMargin={5}
-        colorScheme={theme === 'dark' ? 'dark' : 'light'}
+        blockSize={13}
+        blockMargin={4}
+        colorScheme={resolvedTheme === 'dark' ? 'dark' : 'light'}
       />
     </div>
   )

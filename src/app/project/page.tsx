@@ -6,74 +6,9 @@ import { useState, useEffect, useRef } from 'react'
 import { GithubStats } from '@/components/common/GithubStats'
 import { motion, AnimatePresence } from 'framer-motion'
 import { twMerge } from 'tailwind-merge'
-
-// =====================
-// DATA PROYEK
-// =====================
-const projects: IProject[] = [
-  {
-    title: 'Sampahku Hartaku',
-    image: 'sampahku.png',               // → /public/project/pos.png
-    deskripsi: 'An educational platform on waste management, inspiring communities to turn trash into treasure.',
-    type: 'web',
-    demo: 'https://kolaboratif11.vercel.app/',
-    repo: 'https://github.com/Riz456/Sampahku-hartaku',
-  },
-  {
-    title: 'Sekolah digital',
-    image: 'sd.png',               // → /public/project/api.png
-    deskripsi: 'A smart student management system that streamlines academic and administrative processes.',
-    type: 'web',
-    demo: 'https://rizkyafrino14.github.io/tugas1_bootstrap/tugas/tugas_bootstrap2.html',
-    repo: 'https://github.com/rizkyafrino14/tugas1_bootstrap',
-  },
-  {
-    title: 'Environment Website',
-    image: 'env.png',               // → /public/project/api.png
-    deskripsi: 'A digital movement for reforestation, empowering people to take action in preserving the planet.',
-    type: 'web',
-    demo: 'https://rizkyafrino14.github.io/environment/',
-    repo: 'https://github.com/rizkyafrino14/environment',
-  },
-  {
-    title: 'Travel Explore',
-    image: 'travel.png',               // → /public/project/api.png
-    deskripsi: 'A seamless travel booking website designed for effortless ticket reservations and trip planning.',
-    type: 'web',
-    demo: 'https://rizkyafrino14.github.io/tugas4_travelexplore/',
-    repo: 'https://github.com/rizkyafrino14/tugas4_travelexplore',
-  },
-  {
-    title: 'PetMing',
-    image: 'petmig.png',               // → /public/project/api.png
-    deskripsi: 'An online marketplace for pet supplies and food, bringing quality products to animal lovers.',
-    type: 'web',
-    demo: 'https://rizkyafrino14.github.io/tugas5_petshop/',
-    repo: 'https://github.com/rizkyafrino14/tugas5_petshop',
-  },
-  {
-    title: 'Portofolio Website',
-    image: 'porto.png',               // → /public/project/Porto.png
-    deskripsi: 'A professional personal portfolio with a clean interface to highlight projects and personal branding.',
-    type: 'web',
-    demo: 'https://afrino.vercel.app/',
-    repo: 'https://github.com/rizkyafrino14/portofolio-01',
-  },
-  // ➕ Tambah proyek baru di sini  ya
-  // type yang valid: 'web' | 'api' | 'mobile' | 'android' | 'ios' | 'flutter'
-]
-
-// =====================
-// TYPES
-// =====================
-interface IProject {
-  title: string
-  image: string
-  deskripsi: string
-  type: 'web' | 'api' | 'mobile' | 'android' | 'ios' | 'flutter'
-  demo: string
-  repo: string
-}
+import { projects } from '@/utils/constant/Projects'
+import { useT } from '@/lib/i18n'
+import { getSettings, playSfx } from '@/lib/settings'
 
 // =====================
 // DATA QUIZ
@@ -124,10 +59,10 @@ function useSound() {
   const bgRef = useRef<HTMLAudioElement | null>(null)
 
   const playBg = () => {
-    if (bgRef.current) return
+    if (bgRef.current || !getSettings().sfx) return
     const audio = new Audio('/sounds/game-bg.mp3')
     audio.loop = true
-    audio.volume = 0.3
+    audio.volume = 0.3 * getSettings().sfxVolume
     audio.play().catch(() => {})
     bgRef.current = audio
   }
@@ -139,11 +74,7 @@ function useSound() {
     bgRef.current = null
   }
 
-  const play = (src: string, volume = 0.6) => {
-    const audio = new Audio(src)
-    audio.volume = volume
-    audio.play().catch(() => {})
-  }
+  const play = (src: string, volume = 0.6) => playSfx(src, volume / 0.6)
 
   return { playBg, stopBg, play }
 }
@@ -206,7 +137,7 @@ function MusicBtn({ playing, onToggle }: { playing: boolean; onToggle: () => voi
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.9 }}
       onClick={onToggle}
-      className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-black-primary bg-white text-sm hover:bg-yellow-primary dark:border-[#383B52] dark:bg-[#1C1E2E] dark:text-[#E4E6F0]"
+      className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-black-primary bg-card text-sm hover:bg-yellow-primary"
       title={playing ? 'Matikan musik' : 'Nyalakan musik'}
     >
       {playing ? '🔊' : '🔇'}
@@ -240,7 +171,7 @@ function ShareButtons({ score }: { score: number }) {
         whileHover={{ scale: 1.03 }}
         whileTap={{ scale: 0.97 }}
         onClick={shareWA}
-        className="flex flex-1 items-center justify-center gap-2 rounded-xl border-2 border-black-primary bg-[#25D366] py-3 text-sm font-bold text-white shadow-button-card hover:opacity-90 dark:border-[#383B52]"
+        className="flex flex-1 items-center justify-center gap-2 rounded-xl border-2 border-black-primary bg-[#25D366] py-3 text-sm font-bold text-white shadow-pop-sm hover:opacity-90"
       >
         <span className="text-lg"></span> WhatsApp
       </motion.button>
@@ -248,7 +179,7 @@ function ShareButtons({ score }: { score: number }) {
         whileHover={{ scale: 1.03 }}
         whileTap={{ scale: 0.97 }}
         onClick={shareIG}
-        className="flex flex-1 items-center justify-center gap-2 rounded-xl border-2 border-black-primary py-3 text-sm font-bold text-white shadow-button-card hover:opacity-90 dark:border-[#383B52]"
+        className="flex flex-1 items-center justify-center gap-2 rounded-xl border-2 border-black-primary py-3 text-sm font-bold text-white shadow-pop-sm hover:opacity-90"
         style={{ background: 'linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)' }}
       >
         <span className="text-lg"></span> Instagram
@@ -392,13 +323,13 @@ function TriviaGame({ onClose }: { onClose: () => void }) {
           transition={{ type: 'spring', stiffness: 280, damping: 22 }}
           onClick={(e) => e.stopPropagation()}
           style={{ width: '100%', maxWidth: '520px' }}
-          className="overflow-hidden rounded-2xl border-2 border-black-primary bg-white dark:border-[#383B52] dark:bg-[#1C1E2E]"
+          className="overflow-hidden rounded-2xl border-2 border-black-primary bg-card"
         >
           {/* Header */}
-          <div className="flex items-center justify-between border-b-2 border-black-primary bg-yellow-primary px-5 py-3 dark:border-[#383B52] dark:bg-[#252838]">
+          <div className="flex items-center justify-between border-b-2 border-black-primary bg-yellow-primary px-5 py-3">
             <div className="flex items-center gap-2">
               <span className="text-xl">🎮</span>
-              <span className="font-bold text-black-primary dark:text-[#E4E6F0]">
+              <span className="font-bold text-black-primary">
                 Trivia — Seberapa kenal kamu?
               </span>
             </div>
@@ -408,7 +339,7 @@ function TriviaGame({ onClose }: { onClose: () => void }) {
               )}
               <button
                 onClick={handleClose}
-                className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-black-primary bg-white text-sm font-bold text-black-primary hover:bg-orange-primary dark:border-[#383B52] dark:bg-[#1C1E2E] dark:text-[#E4E6F0]"
+                className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-black-primary bg-card text-sm font-bold text-black-primary hover:bg-orange-primary"
               >✕</button>
             </div>
           </div>
@@ -423,23 +354,23 @@ function TriviaGame({ onClose }: { onClose: () => void }) {
               >
                 <PixelChar state="idle" />
                 <div>
-                  <h2 className="text-2xl font-bold text-black-primary dark:text-[#E4E6F0]">Easter Egg Ketemu! 🥚</h2>
-                  <p className="mt-2 text-sm text-gray-500 dark:text-[#9497AA]">
+                  <h2 className="text-2xl font-bold text-black-primary">Easter Egg Ketemu! 🥚</h2>
+                  <p className="mt-2 text-sm text-muted">
                     Kamu nemuin secret code{' '}
                     <code className="rounded bg-yellow-primary px-1 font-bold text-black">6am3</code>!<br />
                     5 soal tentang Rizky — jawab semua & dengerin musiknya! 🎵
                   </p>
                 </div>
-                <div className="flex w-full items-center justify-between rounded-xl border-2 border-black-primary bg-yellow-primary/20 px-4 py-3 dark:border-[#383B52]">
-                  <span className="text-sm font-semibold text-black-primary dark:text-[#E4E6F0]">5 soal</span>
-                  <span className="text-sm font-semibold text-black-primary dark:text-[#E4E6F0]">10 poin/soal</span>
-                  <span className="text-sm font-semibold text-black-primary dark:text-[#E4E6F0]">Max 50 pts</span>
+                <div className="flex w-full items-center justify-between rounded-xl border-2 border-black-primary bg-yellow-primary/20 px-4 py-3">
+                  <span className="text-sm font-semibold text-black-primary">5 soal</span>
+                  <span className="text-sm font-semibold text-black-primary">10 poin/soal</span>
+                  <span className="text-sm font-semibold text-black-primary">Max 50 pts</span>
                 </div>
                 <motion.button
                   whileHover={{ scale: 1.04 }}
                   whileTap={{ scale: 0.96 }}
                   onClick={startGame}
-                  className="w-full rounded-xl border-2 border-black-primary bg-yellow-primary py-3 font-bold text-black-primary shadow-button-card hover:bg-orange-primary dark:border-[#383B52]"
+                  className="w-full rounded-xl border-2 border-black-primary bg-yellow-primary py-3 font-bold text-black-primary shadow-pop-sm hover:bg-orange-primary"
                 >
                   Mulai Quiz + Musik! 🎵🚀
                 </motion.button>
@@ -456,14 +387,14 @@ function TriviaGame({ onClose }: { onClose: () => void }) {
               >
                 {/* Progress */}
                 <div className="flex items-center gap-3">
-                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-100 dark:bg-[#252838]">
+                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-card2">
                     <motion.div
                       className="h-full rounded-full bg-yellow-primary"
                       animate={{ width: `${(currentQ / questions.length) * 100}%` }}
                       transition={{ duration: 0.4 }}
                     />
                   </div>
-                  <span className="text-xs font-bold text-black-primary dark:text-[#E4E6F0]">
+                  <span className="text-xs font-bold text-black-primary">
                     {currentQ + 1}/{questions.length}
                   </span>
                   <span className="text-xs font-bold text-orange-primary">{score} pts</span>
@@ -472,9 +403,9 @@ function TriviaGame({ onClose }: { onClose: () => void }) {
                 {/* Char + Question */}
                 <div className="flex items-center gap-4">
                   <PixelChar state={charState} />
-                  <div className="flex-1 rounded-xl border-2 border-black-primary bg-yellow-primary/10 p-3 dark:border-[#383B52]">
+                  <div className="flex-1 rounded-xl border-2 border-black-primary bg-yellow-primary/10 p-3">
                     <span className="text-lg">{q.emoji}</span>
-                    <p className="mt-1 font-bold text-black-primary dark:text-[#E4E6F0]">{q.question}</p>
+                    <p className="mt-1 font-bold text-black-primary">{q.question}</p>
                   </div>
                 </div>
 
@@ -504,11 +435,11 @@ function TriviaGame({ onClose }: { onClose: () => void }) {
                     const isAnswered = selected !== null
                     const isSelected = selected === idx
 
-                    let style = 'border-black-primary bg-white hover:bg-yellow-primary/20 dark:border-[#383B52] dark:bg-[#252838] dark:hover:bg-[#2E3247]'
+                    let style = 'border-black-primary bg-card hover:bg-yellow-primary/20 dark:hover:bg-[#2E3247]'
                     if (isAnswered) {
                       if (isCorrect) style = 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950 dark:border-emerald-500'
                       else if (isSelected) style = 'border-red-500 bg-red-50 dark:bg-red-950 dark:border-red-500'
-                      else style = 'border-gray-200 bg-gray-50 opacity-40 dark:border-[#383B52] dark:bg-[#252838]'
+                      else style = 'border-gray-200 bg-card2 opacity-40'
                     }
 
                     return (
@@ -519,12 +450,12 @@ function TriviaGame({ onClose }: { onClose: () => void }) {
                         onClick={() => handleAnswer(idx)}
                         disabled={isAnswered}
                         className={twMerge(
-                          'rounded-xl border-2 px-3 py-3 text-left text-sm font-semibold text-black-primary transition-all dark:text-[#E4E6F0]',
+                          'rounded-xl border-2 px-3 py-3 text-left text-sm font-semibold text-black-primary transition-all',
                           style,
-                          !isAnswered && 'cursor-pointer shadow-button-card',
+                          !isAnswered && 'cursor-pointer shadow-pop-sm',
                         )}
                       >
-                        <span className="mr-2 rounded bg-black-primary px-1.5 py-0.5 text-xs text-white dark:bg-[#383B52]">
+                        <span className="mr-2 rounded bg-black-primary px-1.5 py-0.5 text-xs text-white">
                           {String.fromCharCode(65 + idx)}
                         </span>
                         {opt}
@@ -544,15 +475,15 @@ function TriviaGame({ onClose }: { onClose: () => void }) {
               >
                 <PixelChar state={charState} />
                 <div>
-                  <p className="text-4xl font-bold text-black-primary dark:text-[#E4E6F0]">
-                    {score}<span className="text-lg text-gray-400">/50</span>
+                  <p className="text-4xl font-bold text-black-primary">
+                    {score}<span className="text-lg text-muted">/50</span>
                   </p>
                   <h2 className={twMerge('mt-1 text-xl font-bold', result.color)}>{result.label}</h2>
-                  <p className="mt-1 text-sm text-gray-500 dark:text-[#9497AA]">{result.sub}</p>
+                  <p className="mt-1 text-sm text-muted">{result.sub}</p>
                 </div>
 
                 {/* Score bar */}
-                <div className="w-full overflow-hidden rounded-full border-2 border-black-primary bg-gray-100 dark:border-[#383B52] dark:bg-[#252838]">
+                <div className="w-full overflow-hidden rounded-full border-2 border-black-primary bg-card2">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${(score / 50) * 100}%` }}
@@ -562,7 +493,7 @@ function TriviaGame({ onClose }: { onClose: () => void }) {
                 </div>
 
                 {/* Share buttons */}
-                <p className="text-xs text-gray-400 dark:text-[#9497AA]">Share hasil ke temen kamu!</p>
+                <p className="text-xs text-muted">Share hasil ke temen kamu!</p>
                 <ShareButtons score={score} />
 
                 {/* Main lagi */}
@@ -570,7 +501,7 @@ function TriviaGame({ onClose }: { onClose: () => void }) {
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={resetGame}
-                  className="w-full rounded-xl border-2 border-black-primary bg-yellow-primary py-3 text-sm font-bold text-black-primary shadow-button-card hover:bg-orange-primary dark:border-[#383B52]"
+                  className="w-full rounded-xl border-2 border-black-primary bg-yellow-primary py-3 text-sm font-bold text-black-primary shadow-pop-sm hover:bg-orange-primary"
                 >
                   🔄 Main Lagi
                 </motion.button>
@@ -587,23 +518,28 @@ function TriviaGame({ onClose }: { onClose: () => void }) {
 // MAIN PAGE
 // =====================
 export default function Project() {
+  const t = useT()
   const [filter, setFilter] = useState('all')
   const [showGame, setShowGame] = useState(false)
-  const [secretBuffer, setSecretBuffer] = useState('')
+  const secretBuffer = useRef('')
   const SECRET_CODE = '6am3'
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
-      const next = (secretBuffer + e.key).slice(-SECRET_CODE.length)
-      setSecretBuffer(next)
-      if (next === SECRET_CODE) {
+      // Jangan tangkap ketikan saat user mengisi form / input
+      const el = e.target as HTMLElement | null
+      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)) return
+      if (e.key.length !== 1) return
+
+      secretBuffer.current = (secretBuffer.current + e.key).slice(-SECRET_CODE.length)
+      if (secretBuffer.current === SECRET_CODE) {
         setShowGame(true)
-        setSecretBuffer('')
+        secretBuffer.current = ''
       }
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
-  }, [secretBuffer])
+  }, [])
 
   const filtered = [...projects].reverse().filter((item) => {
     if (filter === 'all') return true
@@ -619,7 +555,7 @@ export default function Project() {
   }
 
   const filters = [
-    { key: 'all',    label: 'All' },
+    { key: 'all',    label: t('proj.all') },
     { key: 'web',    label: 'Web' },
     { key: 'mobile', label: 'Mobile' },
     { key: 'api',    label: 'Api' },
@@ -627,33 +563,34 @@ export default function Project() {
 
   return (
     <div>
-      <TextSection icon="⚒️" text="it's My Projects." />
-      <div>
-        <div className="my-10 hidden justify-center md:flex">
-          <GithubStats />
-        </div>
-        <div className="my-4 flex justify-center gap-4 font-semibold text-[#616D8A] dark:text-white sm:gap-6 md:gap-8 lg:gap-4">
-          {filters.map(({ key, label }) => (
-            <button
-              key={key}
-              className="group relative flex cursor-pointer flex-col items-start justify-center"
-              onClick={() => setFilter(key)}
-            >
-              <span className={`absolute bottom-0 h-1 rounded-md bg-orange-primary transition-all duration-300 ease-in-out group-hover:w-full ${filter === key ? 'w-full' : 'w-0'}`} />
-              <p>
-                {label}{' '}
-                {filter === key && `(${counts[key as keyof typeof counts]})`}
-              </p>
-            </button>
-          ))}
-        </div>
+      <TextSection icon="⚒️" text={t('proj.title')} eyebrow={`🐢 ${t('proj.eyebrow')}`} />
+
+      <div className="my-8 hidden md:block">
+        <GithubStats />
       </div>
 
-      <div className="mb-2 mt-6 flex w-full flex-wrap justify-center gap-4 sm:mb-4 md:mb-5 lg:mb-6 lg:gap-6">
+      <div className="my-6 flex flex-wrap gap-2" role="tablist" aria-label="Filter projects">
+        {filters.map(({ key, label }) => (
+          <button
+            key={key}
+            role="tab"
+            aria-selected={filter === key}
+            onClick={() => setFilter(key)}
+            className={twMerge(
+              'rounded-full border-2 border-ink px-4 py-1.5 text-sm font-bold transition-colors',
+              filter === key ? 'bg-ink text-paper' : 'bg-card text-ink hover:bg-sun',
+            )}
+          >
+            {label} <span className="opacity-60">{counts[key as keyof typeof counts]}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="flex w-full flex-wrap gap-6">
         {filtered.length > 0 ? (
-          filtered.map((item, index) => <ProjectCard {...item} key={index} />)
+          filtered.map((item) => <ProjectCard {...item} key={item.title} />)
         ) : (
-          <p className="text-center dark:text-white">Belum ada projek yang dikerjakan nih ...</p>
+          <p className="text-muted">{t('proj.empty')} 🐢</p>
         )}
       </div>
 

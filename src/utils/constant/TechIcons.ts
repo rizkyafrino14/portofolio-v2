@@ -10,7 +10,8 @@ import {
   SiPhp,
   SiNextdotjs,
   SiTailwindcss,
-  SiMysql,  
+  SiMysql,
+  SiLaravel,
 } from 'react-icons/si'
 
 import { TbBrandKotlin } from 'react-icons/tb'
@@ -47,5 +48,9 @@ export const techIcons = [
   {
     name: 'MySQL',
     icons: SiMysql,
+  },
+  {
+    name: 'Laravel',
+    icons: SiLaravel,
   },
 ]

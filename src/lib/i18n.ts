@@ -1,0 +1,328 @@
+'use client'
+
+import { createElement, type ReactNode } from 'react'
+import { useSettings, type Lang } from './settings'
+
+type Dict = Record<string, string>
+
+const en: Dict = {
+  // nav
+  'nav.home': 'Home',
+  'nav.about': 'About',
+  'nav.education': 'Education',
+  'nav.projects': 'Projects',
+  'nav.resume': 'Resume',
+  'nav.contact': 'Contact',
+  'nav.settings': 'Settings',
+
+  // settings
+  'set.title': 'Settings',
+  'set.theme': 'Theme',
+  'set.light': 'Light',
+  'set.dark': 'Dark',
+  'set.system': 'System',
+  'set.language': 'Language',
+  'set.sfx': 'Sound effects',
+  'set.sfxVol': 'SFX volume',
+  'set.music': 'Background music',
+  'set.musicVol': 'Music volume',
+  'set.pets': 'Pixel pets',
+  'set.quality': '3D scene',
+  'set.q.high': 'High',
+  'set.q.low': 'Light',
+  'set.q.off': 'Off',
+  'set.qHint': 'Choose "Light" or "Off" if the page feels slow.',
+  'set.close': 'Close',
+
+  // home
+  'home.location': 'Central Java, Indonesia',
+  'home.hi': "Hi, folks! I'm",
+  'home.a': 'a',
+  'home.roles': 'Junior Web Developer|Mobile Developer|Fullstack Developer',
+  'home.intro':
+    'Fullstack developer from Indonesia. I turn ideas into clean, friendly web experiences — and I keep a few animals around for morale.',
+  'home.cta.projects': 'See my projects',
+  'home.cta.about': 'About me',
+  'home.egg.hint': 'Tap the egg on the desk',
+  'home.egg.progress': 'Cracks',
+  'home.egg.hatched': 'You found the easter egg! 🐣 Tap the chick to reset.',
+  'home.built': 'Built so far',
+  'home.builtSub': 'projects & counting',
+  'home.toolbox': 'My toolbox',
+  'home.sayhi': 'Say hi',
+  'home.sayhiText': "Let's build something together",
+  'home.explore': 'Explore the room',
+
+  // about
+  'about.eyebrow': 'a little story',
+  'about.title': 'More about me',
+  'about.p1':
+    'I am a Software Engineering (RPL) student from **SMK Negeri 1 Tengaran**. I have a strong understanding of **HTML, CSS, JavaScript** and web development, with hands-on experience building projects with **Bootstrap** and **Tailwind CSS**. Right now I am deepening my knowledge in **web & Android development**.',
+  'about.p2':
+    'I work with **ReactJS** and **Next.js** on the frontend, I am learning backend development with **Laravel**, and I am exploring **Artificial Intelligence** for development.',
+  'about.coffee': 'fueled by coffee',
+  'about.experience': 'Experience',
+  'about.stack': 'Tech stack',
+  'about.stackHint': 'Tap a card to see how comfortable I am with it',
+  'about.lvl.high': 'Confident',
+  'about.lvl.mid': 'Comfortable',
+  'about.lvl.low': 'Learning',
+  'about.lvl.high.d': 'Used regularly in real projects.',
+  'about.lvl.mid.d': 'Comfortable enough to build projects with.',
+  'about.lvl.low.d': 'Still learning and exploring.',
+
+  // education
+  'edu.eyebrow': 'learning, one step at a time',
+  'edu.title': 'Education',
+  'edu.view': 'View certificate',
+  'edu.copy': 'Copy link',
+  'edu.open': 'Open link',
+  'edu.copied': 'Copied!',
+  'edu.empty': 'No certificates yet…',
+
+  // projects
+  'proj.eyebrow': 'slow & steady',
+  'proj.title': 'My Projects',
+  'proj.all': 'All',
+  'proj.empty': 'No projects here yet… the animals are working on it',
+  'proj.live': 'Live',
+  'proj.code': 'Code',
+
+  // resume
+  'res.eyebrow': 'the short version',
+  'res.title': 'Resume',
+  'res.download': 'Download',
+  'res.open': 'Open in new tab',
+
+  // contact
+  'con.eyebrow': 'I reply fast, promise',
+  'con.title': 'Find me on',
+  'con.wa': 'Message me on WhatsApp',
+  'con.where': 'Where I am',
+  'con.maps': 'Open in Maps',
+  'con.modalTitle': 'Say hello',
+  'con.waInfo': 'Your message opens in WhatsApp, addressed to me.',
+  'con.name': 'Name',
+  'con.namePh': 'Your name',
+  'con.msg': 'Message',
+  'con.msgPh': 'Write your message here…',
+  'con.chars': 'characters',
+  'con.send': 'Send via WhatsApp',
+  'con.opening': 'Opening WhatsApp…',
+  'con.done': 'Message ready!',
+  'con.doneSub': 'WhatsApp should be open now. Thanks for reaching out!',
+  'con.greeting': 'Hi, my name is',
+
+  // footer
+  'foot.tag': 'Fullstack developer crafting friendly web experiences.',
+  'foot.nav': 'Pages',
+  'foot.social': 'Find me',
+  'foot.built': 'Built with Next.js, React Three Fiber & Tailwind CSS.',
+  'foot.rights': 'All rights reserved.',
+  // cat
+  'cat.laser': 'Laser',
+  'cat.yarn': 'Yarn',
+  'cat.feed': 'Feed',
+  'cat.follow': 'Follow',
+  'cat.hint': 'Tap Mochi to pet · tap the floor to call',
+  'cat.laserHint': 'Move your cursor on the floor — Mochi chases the dot',
+  'cat.s.sleep': 'is napping 💤',
+  'cat.s.sit': 'is chilling',
+  'cat.s.groom': 'is grooming',
+  'cat.s.walk': 'is strolling around',
+  'cat.s.eat': 'is eating 🐟',
+  'cat.s.play': 'is playing',
+  'cat.s.pet': 'is purring ❤',
+  'cat.s.chase': 'is chasing!',
+  'cat.s.stretch': 'is stretching',
+  'cat.s.watch': 'is watching',
+  'cat.open': 'Play with Mochi',
+
+  // education (new)
+  'edu.school': 'SMK Negeri 1 Tengaran',
+  'edu.major': 'Software Engineering (RPL)',
+  'edu.status': 'Current student',
+  'edu.certs': 'Certificates & achievements',
+  'edu.hover': 'Hover a card to spotlight it on the wall',
+
+  // contact (new)
+  'con.sub': 'Pick a topic, write a note — it opens in WhatsApp.',
+  'con.topics': 'Quick topics',
+  'con.t.hire': 'Opportunity',
+  'con.t.collab': 'Collaboration',
+  'con.t.hello': 'Just saying hi',
+  'con.p.hire': "I'd like to talk about an opportunity.",
+  'con.p.collab': "I'd love to collaborate on a project.",
+  'con.p.hello': 'Hi! I just wanted to say hello 👋',
+  'con.preview': 'Preview',
+  'con.social': 'Or find me here',
+  'con.located': 'Based in',
+}
+
+const id: Dict = {
+  'nav.home': 'Beranda',
+  'nav.about': 'Tentang',
+  'nav.education': 'Pendidikan',
+  'nav.projects': 'Proyek',
+  'nav.resume': 'CV',
+  'nav.contact': 'Kontak',
+  'nav.settings': 'Pengaturan',
+
+  'set.title': 'Pengaturan',
+  'set.theme': 'Tema',
+  'set.light': 'Terang',
+  'set.dark': 'Gelap',
+  'set.system': 'Sistem',
+  'set.language': 'Bahasa',
+  'set.sfx': 'Efek suara',
+  'set.sfxVol': 'Volume efek',
+  'set.music': 'Musik latar',
+  'set.musicVol': 'Volume musik',
+  'set.pets': 'Hewan pixel',
+  'set.quality': 'Scene 3D',
+  'set.q.high': 'Tinggi',
+  'set.q.low': 'Ringan',
+  'set.q.off': 'Mati',
+  'set.qHint': 'Pilih "Ringan" atau "Mati" jika halaman terasa lambat.',
+  'set.close': 'Tutup',
+
+  'home.location': 'Jawa Tengah, Indonesia',
+  'home.hi': 'Halo semua! Saya',
+  'home.a': 'seorang',
+  'home.roles': 'Junior Web Developer|Mobile Developer|Fullstack Developer',
+  'home.intro':
+    'Fullstack developer dari Indonesia. Saya mengubah ide menjadi pengalaman web yang bersih dan ramah — dengan beberapa hewan sebagai penyemangat.',
+  'home.cta.projects': 'Lihat proyek saya',
+  'home.cta.about': 'Tentang saya',
+  'home.egg.hint': 'Ketuk telur di meja',
+  'home.egg.progress': 'Retakan',
+  'home.egg.hatched': 'Kamu menemukan easter egg! 🐣 Ketuk anak ayamnya untuk mengulang.',
+  'home.built': 'Sudah dibuat',
+  'home.builtSub': 'proyek dan terus bertambah',
+  'home.toolbox': 'Peralatan saya',
+  'home.sayhi': 'Sapa saya',
+  'home.sayhiText': 'Yuk membangun sesuatu bersama',
+  'home.explore': 'Jelajahi ruangan',
+
+  'about.eyebrow': 'sedikit cerita',
+  'about.title': 'Lebih jauh tentang saya',
+  'about.p1':
+    'Saya siswa Rekayasa Perangkat Lunak (RPL) di **SMK Negeri 1 Tengaran**. Saya memahami **HTML, CSS, JavaScript**, dan pengembangan web, dengan pengalaman membuat proyek memakai **Bootstrap** dan **Tailwind CSS**. Saat ini saya memperdalam **pengembangan web & Android**.',
+  'about.p2':
+    'Saya memakai **ReactJS** dan **Next.js** di sisi frontend, sedang belajar backend dengan **Laravel**, dan mempelajari **Artificial Intelligence** untuk pengembangan.',
+  'about.coffee': 'ditenagai kopi',
+  'about.experience': 'Pengalaman',
+  'about.stack': 'Teknologi',
+  'about.stackHint': 'Ketuk kartu untuk melihat tingkat penguasaan saya',
+  'about.lvl.high': 'Percaya diri',
+  'about.lvl.mid': 'Cukup nyaman',
+  'about.lvl.low': 'Belajar',
+  'about.lvl.high.d': 'Sering dipakai di proyek nyata.',
+  'about.lvl.mid.d': 'Cukup dikuasai untuk membuat proyek.',
+  'about.lvl.low.d': 'Masih tahap belajar dan eksplorasi.',
+
+  'edu.eyebrow': 'belajar selangkah demi selangkah',
+  'edu.title': 'Pendidikan',
+  'edu.view': 'Lihat sertifikat',
+  'edu.copy': 'Salin tautan',
+  'edu.open': 'Buka tautan',
+  'edu.copied': 'Tersalin!',
+  'edu.empty': 'Belum ada sertifikat…',
+
+  'proj.eyebrow': 'pelan tapi pasti',
+  'proj.title': 'Proyek Saya',
+  'proj.all': 'Semua',
+  'proj.empty': 'Belum ada proyek di sini… para hewan sedang mengerjakannya',
+  'proj.live': 'Demo',
+  'proj.code': 'Kode',
+
+  'res.eyebrow': 'versi singkat',
+  'res.title': 'CV',
+  'res.download': 'Unduh',
+  'res.open': 'Buka di tab baru',
+
+  'con.eyebrow': 'saya balas cepat, janji',
+  'con.title': 'Temukan saya di',
+  'con.wa': 'Kirim pesan via WhatsApp',
+  'con.where': 'Lokasi saya',
+  'con.maps': 'Buka di Maps',
+  'con.modalTitle': 'Sapa saya',
+  'con.waInfo': 'Pesanmu akan terbuka di WhatsApp, ditujukan ke saya.',
+  'con.name': 'Nama',
+  'con.namePh': 'Nama kamu',
+  'con.msg': 'Pesan',
+  'con.msgPh': 'Tulis pesanmu di sini…',
+  'con.chars': 'karakter',
+  'con.send': 'Kirim via WhatsApp',
+  'con.opening': 'Membuka WhatsApp…',
+  'con.done': 'Pesan siap!',
+  'con.doneSub': 'WhatsApp seharusnya sudah terbuka. Terima kasih sudah menghubungi!',
+  'con.greeting': 'Halo, nama saya',
+
+  'foot.tag': 'Fullstack developer yang membuat pengalaman web yang ramah.',
+  'foot.nav': 'Halaman',
+  'foot.social': 'Temukan saya',
+  'foot.built': 'Dibuat dengan Next.js, React Three Fiber & Tailwind CSS.',
+  'foot.rights': 'Hak cipta dilindungi.',
+  // cat
+  'cat.laser': 'Laser',
+  'cat.yarn': 'Benang',
+  'cat.feed': 'Kasih makan',
+  'cat.follow': 'Ikuti',
+  'cat.hint': 'Ketuk Mochi untuk mengelus · ketuk lantai untuk memanggil',
+  'cat.laserHint': 'Gerakkan kursor di lantai — Mochi mengejar titiknya',
+  'cat.s.sleep': 'sedang tidur 💤',
+  'cat.s.sit': 'sedang santai',
+  'cat.s.groom': 'sedang menjilat bulu',
+  'cat.s.walk': 'sedang jalan-jalan',
+  'cat.s.eat': 'sedang makan 🐟',
+  'cat.s.play': 'sedang bermain',
+  'cat.s.pet': 'mendengkur ❤',
+  'cat.s.chase': 'sedang mengejar!',
+  'cat.s.stretch': 'sedang meregang',
+  'cat.s.watch': 'sedang mengamati',
+  'cat.open': 'Main dengan Mochi',
+
+  // education (new)
+  'edu.school': 'SMK Negeri 1 Tengaran',
+  'edu.major': 'Rekayasa Perangkat Lunak (RPL)',
+  'edu.status': 'Siswa aktif',
+  'edu.certs': 'Sertifikat & penghargaan',
+  'edu.hover': 'Arahkan kursor ke kartu untuk menyorotnya di dinding',
+
+  // contact (new)
+  'con.sub': 'Pilih topik, tulis pesan — akan terbuka di WhatsApp.',
+  'con.topics': 'Topik cepat',
+  'con.t.hire': 'Peluang kerja',
+  'con.t.collab': 'Kolaborasi',
+  'con.t.hello': 'Sekadar menyapa',
+  'con.p.hire': 'Saya ingin membicarakan sebuah peluang.',
+  'con.p.collab': 'Saya ingin berkolaborasi di sebuah proyek.',
+  'con.p.hello': 'Halo! Saya hanya ingin menyapa 👋',
+  'con.preview': 'Pratinjau',
+  'con.social': 'Atau temukan saya di sini',
+  'con.located': 'Berdomisili di',
+}
+
+const dicts: Record<Lang, Dict> = { en, id }
+
+export type TKey = keyof typeof en
+
+export function useT() {
+  const { lang } = useSettings()
+  return (key: TKey) => dicts[lang][key] ?? en[key] ?? key
+}
+
+/** Pilih teks dari objek dua bahasa, misalnya data proyek. */
+export type Bi = { en: string; id: string }
+export function useBi() {
+  const { lang } = useSettings()
+  return (v: Bi | string) => (typeof v === 'string' ? v : v[lang])
+}
+
+/** Teks dengan **tebal** → elemen <b>. */
+export function rich(text: string): ReactNode[] {
+  return text
+    .split('**')
+    .map((part, i) => (i % 2 ? createElement('b', { key: i, className: 'text-ink' }, part) : part))
+}

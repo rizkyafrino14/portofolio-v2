@@ -1,147 +1,115 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { IconContext } from 'react-icons'
+import Link from 'next/link'
+import Image from 'next/image'
 import { RxHamburgerMenu } from 'react-icons/rx'
-import { RiCloseFill } from 'react-icons/ri'
+import { RiCloseFill, RiSettings3Fill } from 'react-icons/ri'
+import { usePathname } from 'next/navigation'
 import { twMerge } from 'tailwind-merge'
-import { logoLinks } from '@/utils/constant/LogoLinks'
-import TransitionLink from './common/transitionLink'
-import { Tooltip } from '@material-tailwind/react'
-import { usePathname, useRouter } from 'next/navigation'
-import { animatePageOut } from '@/utils/animation/animatePage'
+import { useT, type TKey } from '@/lib/i18n'
+import SettingsPanel from './common/SettingsPanel'
 
-type Routes = '/about' | '/education' | '/project'
+export const navLinks: { key: TKey; href: string }[] = [
+  { key: 'nav.home', href: '/' },
+  { key: 'nav.about', href: '/about' },
+  { key: 'nav.education', href: '/education' },
+  { key: 'nav.projects', href: '/project' },
+  { key: 'nav.resume', href: '/resume' },
+  { key: 'nav.contact', href: '/contact' },
+]
 
 export default function Navbar() {
-  const [isActive, setIsActive] = useState(false)
-  const pathName = usePathname()
-  const router = useRouter()
-
-  const navLinks = [
-    { name: '🚀 Home',      href: '/' },
-    { name: '😎 About',     href: '/about' },
-    { name: '🎓 Education', href: '/education' },
-    { name: '⚒️ Project',   href: '/project' },
-    { name: '📑 Resume',    href: '/resume' },
-    { name: '📲 Contact',   href: '/contact' },
-  ]
-
-  const navigationRoutes = {
-    '/about':    '/education',
-    '/education': '/project',
-    '/project':  '/resume',
-    '/resume':   '/contact',
-  }
-
-  const [navBg, setNavBg] = useState(false)
+  const t = useT()
+  const [menu, setMenu] = useState(false)
+  const [settings, setSettings] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+  const pathname = usePathname()
 
   useEffect(() => {
-    const changeNavBg = () => setNavBg(window.scrollY >= 100)
-    window.addEventListener('scroll', changeNavBg)
-    return () => window.removeEventListener('scroll', changeNavBg)
+    const onScroll = () => setScrolled(window.scrollY >= 24)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  useEffect(() => setMenu(false), [pathname])
+
   return (
-    <nav
-      className={twMerge(
-        'sticky top-0 z-10 flex items-center justify-end bg-transparent px-5 py-3 text-[#616D8A] duration-200 dark:text-white md:px-10 md:py-5',
-        navBg && 'md:justify-center md:py-2',
-      )}
-    >
-      {/* Desktop Nav */}
-      <ul
+    <header className="sticky top-0 z-30 px-4 pt-3 md:px-8" data-ui>
+      <nav
+        aria-label="Main"
         className={twMerge(
-          'hidden gap-6 text-lg md:flex',
-          navBg &&
-            'gap-4 rounded-xl border-2 border-black-primary bg-white p-4 text-black-primary shadow-nav-card dark:border-[#2D3F5C] dark:bg-[#1E2D45] dark:text-white dark:shadow-none',
+          'mx-auto flex max-w-6xl items-center justify-between gap-3 rounded-full border border-line/25 bg-card/70 px-3 py-2 shadow-soft backdrop-blur-xl transition-colors',
+          scrolled && 'bg-card/90',
         )}
       >
-        {navLinks.map((link, index) => (
-          <TransitionLink key={index} href={link.href} label={link.name} />
-        ))}
-      </ul>
+        <Link href="/" className="flex items-center gap-2 pl-1 font-display text-lg font-bold text-ink">
+          <span className="grid h-10 w-10 place-items-center overflow-hidden rounded-full border border-line/25 bg-white shadow-sm">
+            <Image src="/logo.png" alt="Logo Rizky" width={40} height={40} priority className="h-full w-full object-contain p-0.5" />
+          </span>
+          <span className="hidden sm:inline">Rizky</span>
+        </Link>
 
-      {/* Next Page Button */}
-      {navBg && (
-        <div
-          onClick={() => animatePageOut(navigationRoutes[pathName as Routes], router)}
-          className="fixed top-0 my-4 hidden h-16 w-16 -rotate-120 cursor-pointer rounded-full border-4 border-black-primary bg-yellow-primary duration-150 hover:-rotate-90 dark:border-[#2D3F5C] md:right-16 md:block"
-        >
-          <Tooltip
-            content="Next Page"
-            animate={{
-              mount: { scale: 1, y: 0 },
-              unmount: { scale: 0, y: -25 },
-            }}
+        <ul className="hidden items-center gap-1 md:flex">
+          {navLinks.map((l) => {
+            const active = l.href === '/' ? pathname === '/' : pathname.startsWith(l.href)
+            return (
+              <li key={l.href}>
+                <Link
+                  href={l.href}
+                  aria-current={active ? 'page' : undefined}
+                  className={twMerge(
+                    'block rounded-full px-4 py-2 text-sm font-semibold text-muted transition-colors hover:text-ink',
+                    active && 'bg-ink text-paper hover:text-paper',
+                  )}
+                >
+                  {t(l.key)}
+                </Link>
+              </li>
+            )
+          })}
+        </ul>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setSettings(!settings)}
+            aria-label={t('nav.settings')}
+            aria-expanded={settings}
+            className="grid h-10 w-10 place-items-center rounded-full border border-line/30 bg-card text-xl text-ink transition-transform hover:rotate-45"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="p-2" viewBox="0 0 24 24">
-              <g fill="none" stroke="black" strokeLinecap="round" strokeWidth={2}>
-                <path strokeDasharray="2 4" strokeDashoffset={6} d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21">
-                  <animate attributeName="stroke-dashoffset" dur="0.6s" repeatCount="indefinite" values="6;0" />
-                </path>
-                <path strokeDasharray={30} strokeDashoffset={30} d="M12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3">
-                  <animate fill="freeze" attributeName="stroke-dashoffset" begin="0.1s" dur="0.3s" values="30;0" />
-                </path>
-                <path strokeDasharray={10} strokeDashoffset={10} d="M12 8v7.5">
-                  <animate fill="freeze" attributeName="stroke-dashoffset" begin="0.5s" dur="0.2s" values="10;0" />
-                </path>
-                <path strokeDasharray={6} strokeDashoffset={6} d="M12 15.5l3.5 -3.5M12 15.5l-3.5 -3.5">
-                  <animate fill="freeze" attributeName="stroke-dashoffset" begin="0.7s" dur="0.2s" values="6;0" />
-                </path>
-              </g>
-            </svg>
-          </Tooltip>
+            <RiSettings3Fill />
+          </button>
+          <button
+            onClick={() => setMenu(!menu)}
+            aria-label="Menu"
+            aria-expanded={menu}
+            className="grid h-10 w-10 place-items-center rounded-full border border-line/30 bg-card text-xl text-ink md:hidden"
+          >
+            {menu ? <RiCloseFill /> : <RxHamburgerMenu />}
+          </button>
         </div>
-      )}
+      </nav>
 
-      {/* Mobile Hamburger */}
-      <div className="flex md:hidden">
-        <button
-          onClick={() => setIsActive(!isActive)}
-          className="rounded-full border-2 border-[#2D3F5C] bg-gray-100 p-1 dark:bg-[#1E2D45]"
-        >
-          <IconContext.Provider value={{ className: 'text-4xl text-black-primary dark:text-white p-2' }}>
-            {isActive ? <RiCloseFill /> : <RxHamburgerMenu />}
-          </IconContext.Provider>
-        </button>
-      </div>
-
-      {/* Mobile Menu */}
-      <div
-        className={twMerge(
-          'fixed top-12 flex h-full w-full justify-center overflow-x-hidden rounded transition-all duration-300 ease-in-out md:hidden',
-          isActive ? 'right-0' : '-right-full',
-        )}
-      >
-        <ul className="m-5 flex h-fit w-full flex-col items-center gap-8 rounded-xl border-2 border-[#2D3F5C] bg-gray-100 px-3 py-6 text-lg font-light dark:bg-[#1E2D45]">
-          {navLinks.map((link, index) => (
-            <li
-              key={index}
-              className="group relative w-fit cursor-pointer font-semibold text-[#616D8A] dark:text-white"
-            >
-              <span className="absolute bottom-0 h-1 w-0 rounded-md bg-orange-primary transition-all duration-300 ease-in-out group-hover:w-full" />
-              <a href={link.href}>{link.name}</a>
+      {menu && (
+        <ul className="mx-auto mt-2 flex max-w-6xl flex-col gap-1 rounded-3xl border border-line/25 bg-card/95 p-3 shadow-soft backdrop-blur-xl md:hidden">
+          {navLinks.map((l) => (
+            <li key={l.href}>
+              <Link
+                href={l.href}
+                className={twMerge(
+                  'block rounded-2xl px-4 py-3 font-semibold text-ink',
+                  (l.href === '/' ? pathname === '/' : pathname.startsWith(l.href)) && 'bg-card2',
+                )}
+              >
+                {t(l.key)}
+              </Link>
             </li>
           ))}
-          <div>
-            <ul className="flex gap-4">
-              {logoLinks.slice(0, 5).map((link, index) => {
-                const Icon = link.icon
-                return (
-                  <li key={index}>
-                    <a href={link.href} target="_blank" rel="noreferrer">
-                      <IconContext.Provider value={{ className: 'text-2xl text-black-primary dark:text-white' }}>
-                        <Icon />
-                      </IconContext.Provider>
-                    </a>
-                  </li>
-                )
-              })}
-            </ul>
-          </div>
         </ul>
-      </div>
-    </nav>
+      )}
+
+      <SettingsPanel open={settings} onClose={() => setSettings(false)} />
+    </header>
   )
 }

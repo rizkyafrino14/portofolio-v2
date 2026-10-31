@@ -64,9 +64,16 @@ const ScrambleText: React.FC<Props> = ({ children }) => {
       }}
       onMouseEnter={scramble}
       onMouseLeave={stopScramble}
-      className="cursor-pointer text-3xl font-bold dark:text-white md:text-6xl"
+      aria-label={TARGET_TEXT}
+      className="relative cursor-pointer font-display text-4xl font-bold leading-[1.05] text-ink sm:text-5xl md:text-7xl"
     >
-      {text}
+      {/* Teks asli tak terlihat menjaga ukuran/baris; teks acak ditumpuk di atasnya */}
+      <span className="invisible" aria-hidden>
+        {TARGET_TEXT}
+      </span>
+      <span className="absolute inset-0 overflow-hidden" aria-hidden>
+        {text}
+      </span>
     </motion.h1>
   )
 }

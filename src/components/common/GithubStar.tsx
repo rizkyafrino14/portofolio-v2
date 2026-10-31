@@ -1,50 +1,43 @@
 'use client'
 
 import { fetcher } from '@/utils/service/Fetcher'
-import { useEffect } from 'react'
 import { FaCodeFork, FaGithub } from 'react-icons/fa6'
 import { GoStarFill } from 'react-icons/go'
-import Skeleton from 'react-loading-skeleton'
 import useSWR from 'swr'
 import AnimatedCounter from './AnimatedCounter'
 
-export default function GithubStar() {
-  const { data, isLoading, error } = useSWR(
-    `https://api.github.com/repos/rizkyafrino14/portof-v1`,
-    fetcher,
-    { revalidateOnFocus: false, revalidateOnReconnect: false },
-  )
+const REPO = 'rizkyafrino14/portofolio-01'
 
-  return isLoading ? (
-    <div className="fixed left-6 top-3 z-10 hidden cursor-pointer items-center space-x-5 md:flex">
-      <Skeleton className="h-14 w-44" />
-    </div>
-  ) : (
-    <div className="fixed left-6 top-3 z-10 hidden cursor-pointer items-center space-x-5 md:flex">
-      <a
-        href="https://github.com/rizkyafrino14/portof-v1"
-        target="_blank"
-        className="flex h-14 w-44 cursor-pointer flex-row rounded-lg border-4 border-black-primary bg-white shadow-image-card duration-150 md:right-16"
-      >
-        <FaGithub className="m-2 text-3xl" />
-        <div>
-          <p className="text-md font-bold">Portfolio-v1</p>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1">
-              <GoStarFill className="text-xs text-black-primary" />
-              <span className="text-xs font-bold">
-                <AnimatedCounter from={0} to={data.stargazers_count} />
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
-              <FaCodeFork className="text-xs" />
-              <span className="text-xs font-bold">
-                <AnimatedCounter from={0} to={data.forks} />
-              </span>
-            </div>
-          </div>
+export default function GithubStar() {
+  const { data } = useSWR(`https://api.github.com/repos/${REPO}`, fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  })
+
+  // Kalau API gagal / rate-limit, kartu tidak ditampilkan (tidak crash).
+  if (!data || typeof data.stargazers_count !== 'number') return null
+
+  return (
+    <a
+      href={`https://github.com/${REPO}`}
+      target="_blank"
+      rel="noreferrer"
+      className="fixed bottom-6 right-6 z-10 hidden items-center gap-3 rounded-2xl border-2 border-ink bg-card px-4 py-2 shadow-pop transition-transform hover:-translate-y-0.5 md:flex"
+    >
+      <FaGithub className="text-2xl text-ink" />
+      <div className="leading-tight">
+        <p className="text-sm font-bold text-ink">portofolio-01</p>
+        <div className="flex items-center gap-3 text-xs font-bold text-muted">
+          <span className="flex items-center gap-1">
+            <GoStarFill className="text-sun" />
+            <AnimatedCounter from={0} to={data.stargazers_count} />
+          </span>
+          <span className="flex items-center gap-1">
+            <FaCodeFork />
+            <AnimatedCounter from={0} to={data.forks} />
+          </span>
         </div>
-      </a>
-    </div>
+      </div>
+    </a>
   )
 }

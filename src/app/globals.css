@@ -1,195 +1,133 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* ======================== */
-/* VARIABLES               */
+/* TOKENS (RGB channels)    */
 /* ======================== */
 :root {
-  --dk-bg:        #1C1E2E;   /* background utama */
-  --dk-surface:   #252838;   /* card / surface */
-  --dk-surface2:  #2E3247;   /* card hover / input */
-  --dk-border:    #383B52;   /* border */
-  --dk-text:      #E4E6F0;   /* teks utama */
-  --dk-text-muted:#9497AA;   /* teks sekunder */
+  --paper: 247 241 228;   /* krem hangat */
+  --card: 255 252 244;
+  --card2: 239 231 213;
+  --ink: 34 48 31;        /* hijau hutan gelap */
+  --muted: 105 113 93;
+  --line: 34 48 31;
+  --accent: 255 122 61;   /* jeruk */
+  --sun: 255 201 74;
+  --leaf: 168 201 138;
+  --berry: 224 92 110;
+  --sky-top: 239 228 210;
+  --sky-bottom: 217 197 166;
+  color-scheme: light;
 }
 
-* {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+.dark {
+  --paper: 20 26 20;
+  --card: 29 38 29;
+  --card2: 38 49 38;
+  --ink: 242 235 220;
+  --muted: 163 171 150;
+  --line: 72 92 68;
+  --accent: 255 143 90;
+  --sun: 255 205 90;
+  --leaf: 122 160 98;
+  --berry: 240 120 136;
+  --sky-top: 23 19 16;
+  --sky-bottom: 42 33 27;
+  color-scheme: dark;
 }
 
-/* Smooth transition saat ganti tema */
-*, *::before, *::after {
-  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.15s ease, box-shadow 0.25s ease;
+html {
+  scroll-behavior: smooth;
 }
 
-/* ======================== */
-/* LIGHT MODE               */
-/* ======================== */
 body {
-  cursor: url('/cursor.png'), auto !important;
-  background-color: #ffffff;
+  /* Langit CSS = latar utama sekaligus fallback bila 3D mati / tidak didukung */
+  background: linear-gradient(rgb(var(--sky-top)), rgb(var(--sky-bottom))) fixed;
+  color: rgb(var(--ink));
+  font-family: var(--font-sans), system-ui, sans-serif;
+  cursor: url('/cursor.png'), auto;
+  -webkit-font-smoothing: antialiased;
 }
 
-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100vh;
-  background-image: url('/background.svg');
-  z-index: -1;
-  opacity: 0.35;
+h1,
+h2,
+.font-display {
+  font-family: var(--font-display), Georgia, serif;
+  letter-spacing: -0.02em;
 }
 
-/* ======================== */
-/* DARK MODE                */
-/* ======================== */
-.dark body {
-  background-color: var(--dk-bg);
-  color: var(--dk-text);
+::selection {
+  background: rgb(var(--accent));
+  color: #fff;
 }
 
-.dark body::before {
-  opacity: 0.05;
+/* Transisi tema, hanya properti warna */
+body,
+main,
+nav,
+a,
+button,
+input,
+textarea {
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    color 0.2s ease;
 }
 
-/* --- Background & Surface --- */
-.dark main {
-  background-color: var(--dk-bg);
+/* Form */
+input,
+textarea {
+  background-color: rgb(var(--card2));
+  color: rgb(var(--ink));
+}
+input::placeholder,
+textarea::placeholder {
+  color: rgb(var(--muted));
 }
 
-.dark .bg-white {
-  background-color: var(--dk-surface) !important;
-  color: var(--dk-text) !important;
+/* Hormati preferensi gerak berkurang */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
 }
 
-.dark .bg-gray-50,
-.dark .bg-gray-100,
-.dark .bg-blue-gray-50 {
-  background-color: var(--dk-surface2) !important;
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
 }
-
-/* --- Border --- */
-.dark .border-gray-200 {
-  border-color: var(--dk-border) !important;
+::-webkit-scrollbar-track {
+  background: rgb(var(--paper));
 }
-
-.dark .border-black-primary {
-  border-color: var(--dk-border) !important;
-}
-
-/* --- Teks --- */
-.dark .text-black-primary,
-.dark .text-black {
-  color: var(--dk-text) !important;
-}
-
-.dark .text-gray-400,
-.dark .text-gray-500,
-.dark .text-secondary-text {
-  color: var(--dk-text-muted) !important;
-}
-
-/* --- Experience Card --- */
-/* card putih dgn text hitam → di dark jadi surface dgn text terang */
-.dark .text-black {
-  color: var(--dk-text) !important;
-}
-
-/* garis timeline */
-.dark .bg-black-primary {
-  background-color: var(--dk-border) !important;
-}
-
-/* --- Tombol outline (See More About Me) --- */
-.dark .bg-white.shadow-button {
-  background-color: var(--dk-surface) !important;
-  color: var(--dk-text) !important;
-  border-color: var(--dk-border) !important;
-}
-
-/* --- Shadow soft di dark --- */
-.dark .shadow-button-card {
-  box-shadow: 0px 6px 0px 0px var(--dk-border);
-}
-
-.dark .shadow-image-card {
-  box-shadow: -6px 8px 0px 0px var(--dk-border);
-}
-
-.dark .shadow-nav-card {
-  box-shadow: -3px 4px 0px 0px var(--dk-border);
-}
-
-/* --- Navbar pill saat scroll --- */
-.dark nav ul.bg-white {
-  background-color: var(--dk-surface) !important;
-  border-color: var(--dk-border) !important;
-  color: var(--dk-text) !important;
-}
-
-.dark nav .bg-gray-100 {
-  background-color: var(--dk-surface) !important;
-}
-
-/* --- Form input --- */
-.dark input,
-.dark textarea {
-  background-color: var(--dk-surface2) !important;
-  color: var(--dk-text) !important;
-  border-color: var(--dk-border) !important;
-}
-
-.dark input::placeholder,
-.dark textarea::placeholder {
-  color: var(--dk-text-muted) !important;
-}
-
-/* --- Badge skill level --- */
-.dark .bg-emerald-100 { background-color: #0d3326 !important; }
-.dark .text-emerald-700 { color: #6ee7b7 !important; }
-
-.dark .bg-blue-100 { background-color: #0d1f3c !important; }
-.dark .text-blue-700 { color: #93c5fd !important; }
-
-.dark .bg-amber-100 { background-color: #3b1f00 !important; }
-.dark .text-amber-700 { color: #fcd34d !important; }
-
-/* --- Info box WhatsApp --- */
-.dark .bg-green-50 { background-color: #082316 !important; }
-.dark .border-green-200 { border-color: #14532d !important; }
-.dark .text-green-700 { color: #86efac !important; }
-
-/* --- Social link card (ikon & teks gelap jadi terang) --- */
-.dark a .text-black-primary,
-.dark a svg path {
-  fill: var(--dk-text) !important;
-  color: var(--dk-text) !important;
-}
-
-/* --- Education card badge --- */
-.dark .text-black-primary {
-  color: var(--dk-text) !important;
-}
-
-/* --- Page transition (kuning) --- */
-/* biarkan warna asli — ini memang kuning di semua mode */
-
-/* --- Scrollbar --- */
-.dark ::-webkit-scrollbar { width: 6px; }
-.dark ::-webkit-scrollbar-track { background: var(--dk-bg); }
-.dark ::-webkit-scrollbar-thumb {
-  background: var(--dk-border);
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--line) / 0.4);
   border-radius: 999px;
 }
-.dark ::-webkit-scrollbar-thumb:hover { background: #FFD43B; }
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--accent));
+}
 
-/* --- Text selection --- */
-.dark ::selection {
-  background-color: #FFD43B;
-  color: #1C1E2E;
+/* Utilitas komponen */
+@layer components {
+  .sticker {
+    @apply inline-flex items-center gap-2 rounded-full border-2 border-ink bg-card px-3 py-1 text-xs font-bold text-ink shadow-pop-sm;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl border-2 border-ink px-4 py-2.5 text-sm md:px-5 md:py-3 font-bold text-ink shadow-pop transition-transform duration-150 hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none md:text-base;
+  }
+  .btn-primary {
+    @apply btn bg-accent text-white hover:brightness-105;
+  }
+  .btn-ghost {
+    @apply btn bg-card;
+  }
+  .panel {
+    @apply rounded-3xl border border-line/25 bg-card/80 shadow-soft backdrop-blur-xl;
+  }
 }

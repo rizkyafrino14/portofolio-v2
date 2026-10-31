@@ -3,67 +3,85 @@
 import Image from 'next/image'
 import { FaExternalLinkAlt, FaGithub } from 'react-icons/fa'
 import { motion } from 'framer-motion'
+import TiltCard from './TiltCard'
+import { setLink } from '@/lib/sceneLink'
+import { useBi, useT, type Bi } from '@/lib/i18n'
 
 export default function ProjectCard({
   image,
   title,
-  description,
   deskripsi,
   repo,
   demo,
   type,
-}: any) {
-  // support dua nama props sekaligus biar aman
-  const desc = description || deskripsi || ''
+  stack,
+}: {
+  image: string
+  title: string
+  deskripsi: Bi
+  repo?: string
+  demo?: string
+  type: string
+  stack?: string[]
+}) {
+  const t = useT()
+  const bi = useBi()
+  const hasDemo = !!demo && demo !== 'none'
 
   return (
     <motion.div
-      whileInView={{ scale: 1 }}
-      initial={{ scale: 0 }}
-      transition={{ duration: 0.3 }}
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className="group relative h-36 w-[280px] cursor-pointer overflow-hidden rounded-lg border-2 border-black-primary object-cover shadow-button-card dark:border-[#383B52] sm:w-[360px] lg:h-44"
+      transition={{ duration: 0.4 }}
+      className="w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)]"
     >
-      <Image
-        src={`/project/${image}`}
-        width={1000}
-        height={1000}
-        className="h-full w-full object-cover"
-        alt={title}
-      />
-      <div className="absolute right-0 top-0 z-10 flex h-1/4 w-full -translate-y-10 items-center justify-end gap-2 p-2 transition-all group-hover:translate-y-0">
-        {demo != 'none' && demo && (
-          <a
-            href={demo}
-            target="_blank"
-            className="cursor-pointer rounded-full border-2 border-black-primary bg-yellow-primary p-1.5 text-sm text-black hover:bg-orange-primary lg:p-2 lg:text-base"
-          >
-            <FaExternalLinkAlt />
-          </a>
-        )}
-        {repo && (
-          <a
-            href={repo}
-            target="_blank"
-            className="cursor-pointer rounded-full border-2 border-black-primary bg-yellow-primary p-1.5 text-sm text-black hover:bg-orange-primary lg:p-2 lg:text-base"
-          >
-            <FaGithub />
-          </a>
-        )}
+    <TiltCard
+      className="h-full"
+      onEnter={() => setLink({ project: image })}
+      onLeave={() => setLink({ project: null })}
+    >
+    <article className="panel group flex h-full w-full flex-col overflow-hidden">
+      <div className="relative aspect-[16/10] overflow-hidden border-b border-line/20 bg-card2">
+        <Image
+          src={`/project/${image}`}
+          width={800}
+          height={500}
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          alt={`Screenshot ${title}`}
+        />
+        <span className="sticker absolute left-3 top-3 uppercase">{type}</span>
       </div>
-      <div className="absolute bottom-0 h-10 w-full border-t-2 border-black-primary bg-yellow-primary p-2 transition-all duration-300 group-hover:h-[60%] dark:border-[#383B52] dark:bg-[#252838] lg:group-hover:h-2/4">
-        <div className="h-20">
-          <h1 className="line-clamp-1 font-bold text-black-primary group-hover:line-clamp-2 dark:text-[#E4E6F0]">
-            {title}{' '}
-            <span className="rounded-lg bg-black p-1 text-xs text-white dark:bg-[#383B52]">
-              {type}
-            </span>
-          </h1>
-          <p className="hidden h-full overflow-y-auto text-xs font-normal text-black-primary group-hover:block dark:text-[#9497AA]">
-            {desc}
-          </p>
+
+      <div className="flex flex-1 flex-col gap-3 p-5">
+        <h3 className="font-display text-2xl font-bold text-ink">{title}</h3>
+        <p className="flex-1 text-sm leading-relaxed text-muted">{bi(deskripsi)}</p>
+
+        {stack && stack.length > 0 && (
+          <ul className="flex flex-wrap gap-1.5">
+            {stack.map((s) => (
+              <li key={s} className="rounded-full bg-card2 px-2.5 py-1 text-xs font-semibold text-ink">
+                {s}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <div className="flex gap-2 pt-1">
+          {hasDemo && (
+            <a href={demo} target="_blank" rel="noreferrer" className="btn-primary !px-4 !py-2 !text-sm">
+              <FaExternalLinkAlt /> {t('proj.live')}
+            </a>
+          )}
+          {repo && (
+            <a href={repo} target="_blank" rel="noreferrer" className="btn-ghost !px-4 !py-2 !text-sm">
+              <FaGithub /> {t('proj.code')}
+            </a>
+          )}
         </div>
       </div>
+    </article>
+    </TiltCard>
     </motion.div>
   )
 }

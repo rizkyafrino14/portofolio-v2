@@ -2,19 +2,27 @@ import type { Config } from 'tailwindcss'
 
 const withMT = require('@material-tailwind/react/utils/withMT')
 
+// Semua warna membaca CSS variable (lihat globals.css) sehingga light/dark
+// cukup diatur di satu tempat, tanpa override !important.
+const token = (name: string) => `rgb(var(--${name}) / <alpha-value>)`
+
 const config: Config = {
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  darkMode: 'class',
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        display: ['var(--font-display)', 'Georgia', 'serif'],
+      },
       cursor: {
-        pointer: 'url(/32.png), pointer', // Custom cursor with pointer
-        default: 'url(/32.png), default', // Custom cursor with default
-        hand: 'url(/hand.png), pointer', // Custom cursor with hand
-        // Add more custom cursors if needed
+        pointer: 'url(/32.png), pointer',
+        default: 'url(/32.png), default',
+        hand: 'url(/hand.png), pointer',
       },
       keyframes: {
         wiggle: {
@@ -25,6 +33,14 @@ const config: Config = {
           '0%': { transform: 'scale(1)' },
           '50%': { transform: 'scale(1.1)' },
           '100%': { transform: 'scale(1)' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0) rotate(var(--r, 0deg))' },
+          '50%': { transform: 'translateY(-8px) rotate(var(--r, 0deg))' },
+        },
+        marquee: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
         },
         'walk-chicken': {
           '0%, 100%': { transform: 'translateX(0%)' },
@@ -50,7 +66,6 @@ const config: Config = {
           '0%, 100%': { transform: 'translateX(90%)' },
           '50%': { transform: 'translateX(10%)' },
         },
-
         flip: {
           '0%, 100%': { transform: 'scaleX(1)' },
           '50%': { transform: 'scaleX(-1)' },
@@ -63,6 +78,8 @@ const config: Config = {
       animation: {
         wiggle: 'wiggle 0.3s ease-in-out',
         crack: 'crack 0.5s ease-in-out',
+        float: 'float 5s ease-in-out infinite',
+        marquee: 'marquee 40s linear infinite',
         spin: 'spin 10s linear infinite',
         'walk-chicken': 'walk-chicken 130s linear infinite',
         'walk-cat': 'walk-cat 80s linear infinite',
@@ -77,27 +94,37 @@ const config: Config = {
         'flip-turle': 'flip-reverse 2000s step-end infinite',
       },
       colors: {
-        background: '#0F182B',
-        'primary-text': '#E2E8F0',
-        'secondary-text': '#A0AEC0',
-        'blue-sky': '#5FBDFF',
-        'black-primary': '#183153',
-        'yellow-primary': '#FFD43B',
-        'orange-primary': '#FAB007',
+        paper: token('paper'),
+        card: token('card'),
+        card2: token('card2'),
+        ink: token('ink'),
+        muted: token('muted'),
+        line: token('line'),
+        accent: token('accent'),
+        sun: token('sun'),
+        leaf: token('leaf'),
+        berry: token('berry'),
+        // Nama lama dipetakan ke token baru supaya komponen lama tidak rusak.
+        background: token('paper'),
+        'primary-text': token('ink'),
+        'secondary-text': token('muted'),
+        'black-primary': token('ink'),
+        'yellow-primary': token('sun'),
+        'orange-primary': token('accent'),
       },
       boxShadow: {
-        button: '0px 6px 0px 0px rgba(109,40,217)',
-        'button-card': '0px 6px 0px 0px #183153',
-        'image-card': '-6px 8px 0px 0px #183153',
-        'nav-card': '-3px 4px 0px 0px #183153',
+        // satu-satunya "hard shadow": dipakai hemat, hanya untuk CTA & sticker
+        pop: '0 4px 0 0 rgb(var(--ink))',
+        'pop-sm': '0 3px 0 0 rgb(var(--ink))',
+        soft: '0 1px 2px rgb(var(--ink) / 0.06), 0 12px 32px -12px rgb(var(--ink) / 0.18)',
+        // alias lama
+        button: '0 4px 0 0 rgb(var(--ink))',
+        'button-card': '0 1px 2px rgb(var(--ink) / 0.06), 0 12px 32px -12px rgb(var(--ink) / 0.18)',
+        'image-card': '0 1px 2px rgb(var(--ink) / 0.06), 0 12px 32px -12px rgb(var(--ink) / 0.18)',
+        'nav-card': '0 1px 2px rgb(var(--ink) / 0.06), 0 12px 32px -12px rgb(var(--ink) / 0.18)',
       },
       height: {
         fullscreen: '100dvh',
-      },
-      backgroundImage: {
-        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'gradient-conic':
-          'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
       },
       rotate: {
         120: '120deg',

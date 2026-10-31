@@ -7,26 +7,33 @@ type TextSectionProps = {
   text: string
   icon: string
   classNames?: string
+  eyebrow?: string
 }
 
 export default function TextSection({
   classNames,
   text,
   icon,
+  eyebrow,
 }: TextSectionProps) {
   return (
-    <div className={twMerge('relative font-semibold xl:text-xl', classNames)}>
-      <p className="relative mx-auto w-fit text-2xl text-black-primary dark:text-white md:text-4xl">
-        <motion.span
-          whileInView={{ width: '100%' }}
-          initial={{ width: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="absolute bottom-0 -z-10 h-6 w-3/4 -translate-x-3 -rotate-2 rounded-md bg-gradient-to-r from-yellow-primary to-transparent"
-        ></motion.span>
-        <motion.span className="text-3xl md:text-[48px]">{icon}</motion.span>
-        {text}
-      </p>
-    </div>
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.4 }}
+      className={twMerge('flex flex-col items-start gap-3', classNames)}
+    >
+      {eyebrow && <span className="sticker">{eyebrow}</span>}
+      <h2 className="flex items-center gap-3 rounded-3xl border border-line/20 bg-card/75 py-2 pl-2 pr-5 font-display text-4xl font-bold text-ink shadow-soft backdrop-blur-xl md:text-6xl">
+        <span
+          aria-hidden
+          className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border-2 border-ink bg-sun text-2xl shadow-pop-sm md:h-16 md:w-16 md:text-4xl"
+        >
+          {icon}
+        </span>
+        <span>{text}</span>
+      </h2>
+    </motion.div>
   )
 }

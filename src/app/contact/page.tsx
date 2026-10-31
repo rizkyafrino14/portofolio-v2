@@ -52,7 +52,7 @@ export default function Contact() {
 
   return (
     <div>
-      <TextSection icon="📲" text={t('con.title')} eyebrow={`🐶 ${t('con.eyebrow')}`} />
+      <TextSection level={1} icon="📲" text={t('con.title')} eyebrow={`🐶 ${t('con.eyebrow')}`} />
 
       {/* satu kolom di kiri (lg+) supaya jendela & ponsel 3D tetap terlihat */}
       <div className="mt-8 flex flex-col gap-5 lg:max-w-lg">

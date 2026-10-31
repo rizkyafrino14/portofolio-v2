@@ -563,7 +563,7 @@ export default function Project() {
 
   return (
     <div>
-      <TextSection icon="⚒️" text={t('proj.title')} eyebrow={`🐢 ${t('proj.eyebrow')}`} />
+      <TextSection level={1} icon="⚒️" text={t('proj.title')} eyebrow={`🐢 ${t('proj.eyebrow')}`} />
 
       <div className="my-8 hidden md:block">
         <GithubStats />

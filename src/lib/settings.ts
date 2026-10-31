@@ -18,7 +18,7 @@ export interface Settings {
 const KEY = 'portfolio-settings-v1'
 
 const defaults: Settings = {
-  lang: 'en',
+  lang: 'id',
   sfx: true,
   sfxVolume: 0.6,
   music: false, // musik tidak pernah auto-nyala (browser memblokir autoplay)

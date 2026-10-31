@@ -56,7 +56,7 @@ export default function About() {
 
   return (
     <section>
-      <TextSection icon="😎" text={t('about.title')} eyebrow={`🦊 ${t('about.eyebrow')}`} />
+      <TextSection level={1} icon="😎" text={t('about.title')} eyebrow={`🦊 ${t('about.eyebrow')}`} />
 
       {/* Bio */}
       <div className="mt-8 grid gap-5 md:grid-cols-12">

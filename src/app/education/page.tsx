@@ -67,7 +67,7 @@ export default function Education() {
 
   return (
     <div>
-      <TextSection icon="🎓" text={t('edu.title')} eyebrow={`🐌 ${t('edu.eyebrow')}`} />
+      <TextSection level={1} icon="🎓" text={t('edu.title')} eyebrow={`🐌 ${t('edu.eyebrow')}`} />
 
       {/* satu kolom di kiri (lg+) supaya dinding sertifikat 3D tetap terlihat */}
       <div className="mt-8 flex flex-col gap-6 lg:max-w-lg">

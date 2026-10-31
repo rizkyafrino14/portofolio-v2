@@ -8,6 +8,7 @@ import AudioController from '@/components/common/AudioController'
 import CatDock from '@/components/common/CatDock'
 import { ThemeProvider } from '@/provider/themesProvider'
 import GithubStar from '@/components/common/GithubStar'
+import { SITE_URL, jsonLd } from '@/lib/seo'
 
 const sans = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -24,28 +25,40 @@ const display = Fraunces({
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#bfe3f5' },
-    { media: '(prefers-color-scheme: dark)', color: '#0e1512' },
+    { media: '(prefers-color-scheme: light)', color: '#efe4d2' },
+    { media: '(prefers-color-scheme: dark)', color: '#171310' },
   ],
 }
 
+const TITLE = 'Rizky Mustafa Afrino — Fullstack Web Developer (Next.js, React, Laravel)'
+const DESCRIPTION =
+  'Portofolio Rizky Mustafa Afrino, Fullstack Web Developer dari Indonesia (siswa RPL SMK Negeri 1 Tengaran). Lihat proyek React, Next.js, TypeScript & Laravel, sertifikat, dan CV.'
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Rizky Mustafa Afrino | Portofolio',
-    template: '%s — Rizky Mustafa Afrino',
+    default: TITLE,
+    template: '%s | Rizky Mustafa Afrino',
   },
-  description:
-    'Rizky Mustafa Afrino — Fullstack Developer from Indonesia specializing in React, Next.js, and TypeScript. Explore my projects, skills, and journey in web development.',
+  description: DESCRIPTION,
+  applicationName: 'Rizky Mustafa Afrino — Portofolio',
   keywords: [
     'Rizky Mustafa Afrino',
-    'Fullstack Developer',
-    'React',
-    'Next.js',
+    'Rizky Afrino',
+    'portofolio web developer',
+    'fullstack web developer Indonesia',
+    'web developer Indonesia',
+    'Next.js developer',
+    'React developer',
+    'Laravel developer',
     'TypeScript',
-    'Web Developer Indonesia',
+    'SMK Negeri 1 Tengaran',
+    'RPL',
   ],
-  authors: [{ name: 'Rizky Mustafa Afrino', url: 'https://afrino.vercel.app' }],
+  authors: [{ name: 'Rizky Mustafa Afrino', url: SITE_URL }],
   creator: 'Rizky Mustafa Afrino',
+  publisher: 'Rizky Mustafa Afrino',
+  category: 'technology',
 
   verification: {
     google: 'JZDm8fS_tvLpavVAgJxpWEk-hAzqgMCkJDurmHgBe48',
@@ -53,32 +66,30 @@ export const metadata: Metadata = {
 
   openGraph: {
     type: 'website',
-    locale: 'en_US',
-    url: 'https://afrino.vercel.app',
+    locale: 'id_ID',
+    alternateLocale: ['en_US'],
+    url: SITE_URL,
     siteName: 'Rizky Mustafa Afrino',
-    title: 'Rizky Mustafa Afrino | Fullstack Developer',
-    description:
-      'Fullstack Developer from Indonesia — React, Next.js, TypeScript. Check out my projects and skills.',
+    title: TITLE,
+    description: DESCRIPTION,
     images: [
       {
-        url: 'https://afrino.vercel.app/og-image.png',
+        url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'Rizky Mustafa Afrino — Fullstack Developer Portfolio',
+        alt: 'Rizky Mustafa Afrino — Fullstack Web Developer',
       },
     ],
   },
 
   twitter: {
     card: 'summary_large_image',
-    title: 'Rizky Mustafa Afrino | Fullstack Developer',
-    description:
-      'Fullstack Developer from Indonesia — React, Next.js, TypeScript.',
-    images: ['https://afrino.vercel.app/og-image.png'],
+    title: TITLE,
+    description: DESCRIPTION,
+    images: ['/og-image.png'],
     creator: '@riz_456d',
   },
 
-  metadataBase: new URL('https://afrino.vercel.app'),
   alternates: {
     canonical: '/',
   },
@@ -89,6 +100,9 @@ export const metadata: Metadata = {
     googleBot: {
       index: true,
       follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
     },
   },
 }
@@ -99,8 +113,13 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="id" suppressHydrationWarning>
       <body className={`${sans.variable} ${display.variable} overflow-x-hidden`}>
+        {/* Data terstruktur: membantu Google memahami siapa pemilik situs ini */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

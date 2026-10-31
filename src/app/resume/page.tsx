@@ -8,7 +8,7 @@ export default function Resume() {
   const t = useT()
   return (
     <div>
-      <TextSection icon="📄" text={t('res.title')} eyebrow={`🐔 ${t('res.eyebrow')}`} />
+      <TextSection level={1} icon="📄" text={t('res.title')} eyebrow={`🐔 ${t('res.eyebrow')}`} />
 
       <div className="mt-8 flex flex-wrap gap-3">
         <a href="/cv.pdf" download className="btn-primary">

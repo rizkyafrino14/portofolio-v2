@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import { useState } from 'react'
 import { FaExternalLinkAlt, FaGithub } from 'react-icons/fa'
 import { motion } from 'framer-motion'
 import TiltCard from './TiltCard'
@@ -27,6 +28,8 @@ export default function ProjectCard({
   const t = useT()
   const bi = useBi()
   const hasDemo = !!demo && demo !== 'none'
+  // bila file gambar belum diunggah, tampilkan pengganti alih-alih gambar rusak
+  const [imgFailed, setImgFailed] = useState(false)
 
   return (
     <motion.div
@@ -43,13 +46,20 @@ export default function ProjectCard({
     >
     <article className="panel group flex h-full w-full flex-col overflow-hidden">
       <div className="relative aspect-[16/10] overflow-hidden border-b border-line/20 bg-card2">
+        {imgFailed ? (
+          <div className="grid h-full w-full place-items-center bg-gradient-to-br from-sun/40 to-accent/30 text-5xl" role="img" aria-label={`Pratinjau ${title}`}>
+            🖥️
+          </div>
+        ) : (
         <Image
+          onError={() => setImgFailed(true)}
           src={`/project/${image}`}
           width={800}
           height={500}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           alt={`Screenshot ${title}`}
         />
+        )}
         <span className="sticker absolute left-3 top-3 uppercase">{type}</span>
       </div>
 

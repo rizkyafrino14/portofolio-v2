@@ -28,7 +28,7 @@ const POIS: Poi[] = [
   { id: 'chair', p: [0.12, 0.57, -1.95], yaw: 1.0, acts: ['sleep', 'sleep', 'sit'], launch: [0.75, -1.45] },
   { id: 'desk', p: [0.85, 0.82, -2.95], yaw: Math.PI - 0.4, acts: ['watch', 'sit', 'groom'], launch: [1.0, -2.1] },
   { id: 'tree', p: [TREE_AT[0], 1.13, TREE_AT[1]], yaw: 0.8, acts: ['sleep', 'watch'], launch: [-3.2, 1.95] },
-  { id: 'console', p: [4.5, 0.79, -0.6], yaw: Math.PI / 2, acts: ['watch', 'sit'], launch: [3.7, -0.6] },
+  { id: 'console', p: [4.5, 0.77, -0.62], yaw: Math.PI / 2, acts: ['watch', 'sit'], launch: [3.7, -0.6] },
   { id: 'rug', p: [-0.9, 0, -1.3], yaw: 0.4, acts: ['sit', 'groom', 'stretch', 'sleep'] },
   { id: 'sun', p: [2.5, 0, -1.2], yaw: 2.0, acts: ['sleep', 'sit', 'groom'] },
   { id: 'shelf', p: [-3.95, 0, -1.4], yaw: -Math.PI / 2, acts: ['watch', 'sit'] },
@@ -138,7 +138,7 @@ export default function Cat({ dark, route }: { dark: boolean; route: RouteKey })
     timer: 3,
     goal: null as Goal | null,
     poi: null as string | null,
-    jump: null as null | { from: THREE.Vector3; to: THREE.Vector3; t: number; dur: number; arc: number },
+    jump: null as null | { from: THREE.Vector3; to: THREE.Vector3; t: number; dur: number; arc: number; poiId?: string },
     pose: { ...POSE.sit } as Pose,
     phase: 0,
     speed: 0,
@@ -254,9 +254,9 @@ export default function Cat({ dark, route }: { dark: boolean; route: RouteKey })
     return new THREE.Vector3(fx, 0, fz)
   }
 
-  const startJump = (to: THREE.Vector3, arc: number) => {
+  const startJump = (to: THREE.Vector3, arc: number, poiId?: string) => {
     const s = S.current
-    s.jump = { from: s.pos.clone(), to, t: 0, dur: 0.55 + Math.abs(to.y - s.pos.y) * 0.25, arc }
+    s.jump = { from: s.pos.clone(), to, t: 0, dur: 0.55 + Math.abs(to.y - s.pos.y) * 0.25, arc, poiId }
   }
 
   const pet = () => {
@@ -345,6 +345,8 @@ export default function Cat({ dark, route }: { dark: boolean; route: RouteKey })
       if (u >= 1) {
         pos.copy(j.to)
         s.jump = null
+        // penting: tanpa ini kucing menyangka belum sampai, lalu melompat turun lagi
+        if (j.poiId) s.poi = j.poiId
       }
     } else if (s.chase) {
       /* ---- mengejar laser / bola ---- */
@@ -413,7 +415,7 @@ export default function Cat({ dark, route }: { dark: boolean; route: RouteKey })
           pos.x += Math.sin(s.yaw) * s.speed * dt
           pos.z += Math.cos(s.yaw) * s.speed * dt
         } else if (elevatedGoal && pos.y < 0.3) {
-          startJump(new THREE.Vector3(g.x, g.y, g.z), Math.max(0.3, g.y * 0.5))
+          startJump(new THREE.Vector3(g.x, g.y, g.z), Math.max(0.3, g.y * 0.5), g.poi?.id)
         } else {
           // sampai
           s.speed = 0

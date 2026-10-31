@@ -6,7 +6,7 @@ import { GoStarFill } from 'react-icons/go'
 import useSWR from 'swr'
 import AnimatedCounter from './AnimatedCounter'
 
-const REPO = 'rizkyafrino14/portofolio-01'
+const REPO = 'rizkyafrino14/portofolio-v2'
 
 export default function GithubStar() {
   const { data } = useSWR(`https://api.github.com/repos/${REPO}`, fetcher, {
@@ -26,7 +26,7 @@ export default function GithubStar() {
     >
       <FaGithub className="text-2xl text-ink" />
       <div className="leading-tight">
-        <p className="text-sm font-bold text-ink">portofolio-01</p>
+        <p className="text-sm font-bold text-ink">portofolio-v2</p>
         <div className="flex items-center gap-3 text-xs font-bold text-muted">
           <span className="flex items-center gap-1">
             <GoStarFill className="text-sun" />

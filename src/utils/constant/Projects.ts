@@ -92,7 +92,7 @@ export const projects: IProject[] = [
     },
     type: 'web',
     demo: 'https://rizky.pplgku.my.id/',
-    repo: 'https://github.com/rizkyafrino14/portofolio-01',
+    repo: 'https://github.com/rizkyafrino14/portofolio-v2',
     stack: ['Next.js', 'TypeScript', 'Three.js'],
   },
   // ➕ Tambah proyek baru di sini

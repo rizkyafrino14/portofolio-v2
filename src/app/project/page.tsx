@@ -151,7 +151,7 @@ function MusicBtn({ playing, onToggle }: { playing: boolean; onToggle: () => voi
 function ShareButtons({ score }: { score: number }) {
   const result = getResult(score)
   const text = `Gue baru main Trivia dengan code '6am3' isinya tentang Rizky dan dapet ${score}/50 poin!\n"${result.label}"\n\nCoba kamu juga di portfolionya!`
-  const portfolioUrl = 'https://afrino.vercel.app/project'
+  const portfolioUrl = 'https://rizky.pplgku.my.id/project'
 
   const shareWA = () => {
     const waText = encodeURIComponent(`${text}\n${portfolioUrl}`)

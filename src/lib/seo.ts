@@ -1,7 +1,7 @@
 // Satu sumber kebenaran untuk SEO: URL situs, data terstruktur, dan helper metadata halaman.
 import type { Metadata } from 'next'
 
-export const SITE_URL = 'https://afrino.vercel.app'
+export const SITE_URL = 'https://rizky.pplgku.my.id'
 export const SITE_NAME = 'Rizky Mustafa Afrino'
 
 export const routes = ['', '/about', '/education', '/project', '/resume', '/contact'] as const

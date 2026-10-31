@@ -91,7 +91,7 @@ export const projects: IProject[] = [
       id: 'Portofolio pribadi 3D yang imersif untuk menampilkan proyek dan personal branding.',
     },
     type: 'web',
-    demo: 'https://afrino.vercel.app/',
+    demo: 'https://rizky.pplgku.my.id/',
     repo: 'https://github.com/rizkyafrino14/portofolio-01',
     stack: ['Next.js', 'TypeScript', 'Three.js'],
   },

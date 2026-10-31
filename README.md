@@ -2,7 +2,7 @@
 
 # Rizky Mustafa Afrino — Personal Portfolio
 
-Live: https://afrino.vercel.app
+Live: https://rizky.pplgku.my.id
 
 An immersive 3D portfolio set on a floating low-poly animal island. Each page is
 a place on the island and the camera flies between them. Includes a hatchable 3D

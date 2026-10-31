@@ -97,6 +97,22 @@ const angleDiff = (a: number, b: number) => {
   return d
 }
 
+/**
+ * Arah hadap setelah sampai di tujuan. Mochi boleh menghadap ke arah yang
+ * "masuk akal" (jendela, rak, meja), tapi tidak boleh membelakangi kamera:
+ * paling jauh tampak menyamping, supaya pengunjung tetap melihat wajahnya.
+ * Tanpa arah khusus (NaN), ia menghadap kamera dengan sedikit variasi.
+ * Saat makan arahnya tetap (menghadap mangkuk).
+ */
+const MAX_AWAY = 1.45 // ~83 derajat dari arah kamera
+function facingTowardViewer(target: number, then: CatActivity, pos: THREE.Vector3, cam: THREE.Vector3) {
+  if (then === 'eat' && !Number.isNaN(target)) return target
+  const toCam = Math.atan2(cam.x - pos.x, cam.z - pos.z)
+  if (Number.isNaN(target)) return toCam + rand(-0.7, 0.7)
+  const d = angleDiff(toCam, target)
+  return Math.abs(d) > MAX_AWAY ? toCam + Math.sign(d) * MAX_AWAY : target
+}
+
 /* ------------------------------------------------------------------ */
 /* Komponen                                                            */
 /* ------------------------------------------------------------------ */
@@ -194,7 +210,7 @@ export default function Cat({ dark, route }: { dark: boolean; route: RouteKey })
     const s = S.current
     s.chase = null
     s.path = null
-    s.goal = { x, z, y: 0, yaw: yaw ?? s.yaw, then }
+    s.goal = { x, z, y: 0, yaw: yaw ?? Number.NaN, then }
     setAct('walk', 999)
   }
 
@@ -426,7 +442,7 @@ export default function Cat({ dark, route }: { dark: boolean; route: RouteKey })
           if (g.then === 'eat') s.eatUntil = now + 4.5
           s.timer = g.then === 'eat' ? 4.5 : s.timer
           s.headYaw = 0
-          s.faceYaw = g.yaw
+          s.faceYaw = facingTowardViewer(g.yaw, g.then, pos, state.camera.position)
           if (Math.random() < 0.35) meow(rand(0.9, 1.2))
         }
       }

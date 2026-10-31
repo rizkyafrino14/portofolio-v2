@@ -8,7 +8,10 @@ import * as THREE from 'three'
 import { ball, catCtl, catPos, dot, getCatUi, patchCatUi, type CatActivity } from '@/lib/cat'
 import { makeFur } from './textures'
 import { meow, purr } from '@/lib/audio'
+import { BOUNDS, BOWL_AT, CIRCLES, RECTS, TREE_AT, findPath, losClear, nearestFree } from '@/lib/catNav'
 import type { RouteKey } from './Scene'
+
+export { BOWL_AT, TREE_AT }
 
 /* ------------------------------------------------------------------ */
 /* Dunia kucing: titik menarik, rintangan, batas ruangan                */
@@ -21,14 +24,11 @@ interface Poi {
   launch?: [number, number] // titik di lantai tempat kucing bersiap melompat
 }
 
-export const BOWL_AT: [number, number] = [-3.2, 2.6]
-export const TREE_AT: [number, number] = [-3.9, 1.5]
-
 const POIS: Poi[] = [
   { id: 'chair', p: [0.12, 0.57, -1.95], yaw: 1.0, acts: ['sleep', 'sleep', 'sit'], launch: [0.75, -1.45] },
-  { id: 'desk', p: [0.05, 0.82, -3.08], yaw: Math.PI, acts: ['watch', 'sleep', 'groom'], launch: [1.0, -2.25] },
+  { id: 'desk', p: [0.85, 0.82, -2.95], yaw: Math.PI - 0.4, acts: ['watch', 'sit', 'groom'], launch: [1.0, -2.1] },
   { id: 'tree', p: [TREE_AT[0], 1.13, TREE_AT[1]], yaw: 0.8, acts: ['sleep', 'watch'], launch: [-3.2, 1.95] },
-  { id: 'console', p: [4.5, 0.79, -0.6], yaw: Math.PI / 2, acts: ['watch', 'sit'], launch: [3.85, -0.6] },
+  { id: 'console', p: [4.5, 0.79, -0.6], yaw: Math.PI / 2, acts: ['watch', 'sit'], launch: [3.7, -0.6] },
   { id: 'rug', p: [-0.9, 0, -1.3], yaw: 0.4, acts: ['sit', 'groom', 'stretch', 'sleep'] },
   { id: 'sun', p: [2.5, 0, -1.2], yaw: 2.0, acts: ['sleep', 'sit', 'groom'] },
   { id: 'shelf', p: [-3.95, 0, -1.4], yaw: -Math.PI / 2, acts: ['watch', 'sit'] },
@@ -44,19 +44,6 @@ const ROUTE_POI: Partial<Record<RouteKey, string>> = {
   '/education': 'wall',
   '/resume': 'chair',
 }
-
-const BOUNDS = { x0: -4.55, x1: 4.55, z0: -3.55, z1: 3.7 }
-// rintangan lantai: persegi [x0,x1,z0,z1] dan lingkaran [x,z,r]
-const RECTS: [number, number, number, number][] = [
-  [-1.5, 1.5, -3.95, -2.45], // meja
-  [4.1, 5, -1.8, -0.05], // meja konsol
-]
-const CIRCLES: [number, number, number][] = [
-  [0.12, -1.95, 0.42], // kursi
-  [TREE_AT[0], TREE_AT[1], 0.42], // cat tree
-  [4.5, -3.5, 0.4], // tanaman besar
-  [-4.4, 2.6, 0.38], // tanaman besar
-]
 
 const DUR: Record<CatActivity, [number, number]> = {
   sleep: [22, 45],
@@ -164,6 +151,8 @@ export default function Cat({ dark, route }: { dark: boolean; route: RouteKey })
     eatUntil: 0,
     pendingRoute: null as RouteKey | null,
     foodHandled: false,
+    path: null as [number, number][] | null,
+    pathAt: 0,
     faceYaw: undefined as number | undefined,
     hearts: [] as { life: number; x: number; y: number; z: number }[],
     lastStatus: 'sit' as CatActivity,
@@ -196,6 +185,7 @@ export default function Cat({ dark, route }: { dark: boolean; route: RouteKey })
   const goToPoi = (poi: Poi, then?: CatActivity) => {
     const s = S.current
     s.chase = null
+    s.path = null
     s.goal = { poi, x: poi.p[0], z: poi.p[2], y: poi.p[1], yaw: poi.yaw, then: then ?? pick(poi.acts) }
     setAct('walk', 999)
   }
@@ -203,6 +193,7 @@ export default function Cat({ dark, route }: { dark: boolean; route: RouteKey })
   const goToPoint = (x: number, z: number, then: CatActivity, yaw?: number) => {
     const s = S.current
     s.chase = null
+    s.path = null
     s.goal = { x, z, y: 0, yaw: yaw ?? s.yaw, then }
     setAct('walk', 999)
   }
@@ -230,6 +221,37 @@ export default function Cat({ dark, route }: { dark: boolean; route: RouteKey })
     if (poi.id === s.poi) poi = pick(pool)
     const sleepy = night ? 0.55 : 0.2
     goToPoi(poi, Math.random() < sleepy && poi.acts.includes('sleep') ? 'sleep' : undefined)
+  }
+
+  /**
+   * Titik berikutnya menuju (tx, tz) tanpa menabrak perabot.
+   * `exhausted` = jalur sudah habis (tujuan di dalam/di balik perabot, jadi
+   * cukup mendekat), bukan "belum sampai".
+   */
+  const nextWaypoint = (tx: number, tz: number, now: number) => {
+    const s = S.current
+    const { pos } = s
+    if (losClear(pos.x, pos.z, tx, tz)) {
+      s.path = null
+      return { x: tx, z: tz, exhausted: false }
+    }
+    if (!s.path || now - s.pathAt > 0.5) {
+      s.path = findPath(pos.x, pos.z, tx, tz)
+      s.pathAt = now
+    }
+    while (s.path && s.path.length && Math.hypot(s.path[0][0] - pos.x, s.path[0][1] - pos.z) < 0.1) s.path.shift()
+    if (s.path && s.path.length) return { x: s.path[0][0], z: s.path[0][1], exhausted: false }
+    return { x: tx, z: tz, exhausted: true }
+  }
+
+  /** Titik pendaratan yang aman di lantai, searah (dx, dz) dari posisi sekarang. */
+  const landingSpot = (dx: number, dz: number) => {
+    const { pos } = S.current
+    const len = Math.hypot(dx, dz) || 1
+    const x = THREE.MathUtils.clamp(pos.x + (dx / len) * 0.75, BOUNDS.x0, BOUNDS.x1)
+    const z = THREE.MathUtils.clamp(pos.z + (dz / len) * 0.75, BOUNDS.z0, BOUNDS.z1)
+    const [fx, fz] = nearestFree(x, z)
+    return new THREE.Vector3(fx, 0, fz)
   }
 
   const startJump = (to: THREE.Vector3, arc: number) => {
@@ -333,16 +355,17 @@ export default function Cat({ dark, route }: { dark: boolean; route: RouteKey })
         setAct('sit', 3)
       } else if (pos.y > 0.3) {
         // turun dulu ke lantai
-        const dir = new THREE.Vector3(tx - pos.x, 0, tz - pos.z).normalize()
-        startJump(new THREE.Vector3(pos.x + dir.x * 0.7, 0, pos.z + dir.z * 0.7), 0.15)
+        startJump(landingSpot(tx - pos.x, tz - pos.z), 0.15)
         s.poi = null
       } else {
         const dx = tx - pos.x
         const dz = tz - pos.z
         const dist = Math.hypot(dx, dz)
-        const want = Math.atan2(dx, dz)
+        const wp = nextWaypoint(tx, tz, now)
+        const want = Math.atan2(wp.x - pos.x, wp.z - pos.z)
         s.yaw += angleDiff(s.yaw, want) * Math.min(1, dt * 10)
-        const near = s.chase === 'laser' ? 0.3 : 0.2
+        // bila target di balik/di dalam perabot, cukup mendekat lalu bermain
+        const near = wp.exhausted ? 0.6 : s.chase === 'laser' ? 0.3 : 0.2
         if (dist > near) {
           const sp = dist > 0.7 ? 2.0 : 1.0
           s.speed = lerp(s.speed, sp, Math.min(1, dt * 8))
@@ -366,15 +389,13 @@ export default function Cat({ dark, route }: { dark: boolean; route: RouteKey })
       const elevatedGoal = g.y > 0.3
       if (pos.y > 0.3 && !(elevatedGoal && s.poi === g.poi?.id)) {
         // sedang di tempat tinggi → turun dulu ke arah tujuan
-        const dir = new THREE.Vector3(g.x - pos.x, 0, g.z - pos.z)
-        if (dir.lengthSq() < 0.01) dir.set(Math.sin(s.yaw), 0, Math.cos(s.yaw))
-        dir.normalize()
-        const to = new THREE.Vector3(
-          THREE.MathUtils.clamp(pos.x + dir.x * 0.75, BOUNDS.x0, BOUNDS.x1),
-          0,
-          THREE.MathUtils.clamp(pos.z + dir.z * 0.75, BOUNDS.z0, BOUNDS.z1),
-        )
-        startJump(to, 0.18)
+        let dx = g.x - pos.x
+        let dz = g.z - pos.z
+        if (dx * dx + dz * dz < 0.01) {
+          dx = Math.sin(s.yaw)
+          dz = Math.cos(s.yaw)
+        }
+        startJump(landingSpot(dx, dz), 0.18)
         s.poi = null
       } else {
         const tx = elevatedGoal && pos.y < 0.3 ? g.poi?.launch?.[0] ?? g.x : g.x
@@ -382,8 +403,10 @@ export default function Cat({ dark, route }: { dark: boolean; route: RouteKey })
         const dx = tx - pos.x
         const dz = tz - pos.z
         const dist = Math.hypot(dx, dz)
-        if (dist > 0.07) {
-          const want = Math.atan2(dx, dz)
+        const wp = nextWaypoint(tx, tz, now)
+        const arrived = dist <= 0.07 || (wp.exhausted && dist < 0.45)
+        if (!arrived) {
+          const want = Math.atan2(wp.x - pos.x, wp.z - pos.z)
           s.yaw += angleDiff(s.yaw, want) * Math.min(1, dt * 7)
           const sp = Math.abs(angleDiff(s.yaw, want)) > 1.0 ? 0.15 : 0.85
           s.speed = lerp(s.speed, sp, Math.min(1, dt * 6))

@@ -5,7 +5,7 @@ import { useRef } from 'react'
 import { useFrame, type ThreeEvent } from '@react-three/fiber'
 import * as THREE from 'three'
 import { ball, dot, kickBall, useCatUi } from '@/lib/cat'
-import { BOWL_AT, TREE_AT } from './Cat'
+import { BOWL_AT, CIRCLES, RECTS, TREE_AT } from '@/lib/catNav'
 
 const sh = { castShadow: true, receiveShadow: true } as const
 
@@ -26,14 +26,36 @@ export function YarnBall({ enabled }: { enabled: boolean }) {
     if (ball.x > 4.55) ((ball.x = 4.55), (ball.vx = -Math.abs(ball.vx) * 0.6))
     if (ball.z < -3.55) ((ball.z = -3.55), (ball.vz = Math.abs(ball.vz) * 0.6))
     if (ball.z > 3.7) ((ball.z = 3.7), (ball.vz = -Math.abs(ball.vz) * 0.6))
-    // meja & konsol
-    if (ball.x > -1.5 && ball.x < 1.5 && ball.z < -2.45) {
-      ball.z = -2.45
-      ball.vz = Math.abs(ball.vz) * 0.6
+    // perabot: dorong keluar & pantulkan
+    const R_BALL = 0.08
+    for (const [x0, x1, z0, z1] of RECTS) {
+      if (ball.x > x0 - R_BALL && ball.x < x1 + R_BALL && ball.z > z0 - R_BALL && ball.z < z1 + R_BALL) {
+        const dl = ball.x - (x0 - R_BALL)
+        const dr = x1 + R_BALL - ball.x
+        const dtp = ball.z - (z0 - R_BALL)
+        const db = z1 + R_BALL - ball.z
+        const mn = Math.min(dl, dr, dtp, db)
+        if (mn === dl) ((ball.x = x0 - R_BALL), (ball.vx = -Math.abs(ball.vx) * 0.6))
+        else if (mn === dr) ((ball.x = x1 + R_BALL), (ball.vx = Math.abs(ball.vx) * 0.6))
+        else if (mn === dtp) ((ball.z = z0 - R_BALL), (ball.vz = -Math.abs(ball.vz) * 0.6))
+        else ((ball.z = z1 + R_BALL), (ball.vz = Math.abs(ball.vz) * 0.6))
+      }
     }
-    if (ball.x > 4.1 && ball.z > -1.8 && ball.z < -0.05) {
-      ball.x = 4.1
-      ball.vx = -Math.abs(ball.vx) * 0.6
+    for (const [cx, cz, r] of CIRCLES) {
+      const dx = ball.x - cx
+      const dz = ball.z - cz
+      const d = Math.hypot(dx, dz)
+      if (d < r + R_BALL) {
+        const nx = d > 0.001 ? dx / d : 1
+        const nz = d > 0.001 ? dz / d : 0
+        ball.x = cx + nx * (r + R_BALL)
+        ball.z = cz + nz * (r + R_BALL)
+        const vn = ball.vx * nx + ball.vz * nz
+        if (vn < 0) {
+          ball.vx -= 1.6 * vn * nx
+          ball.vz -= 1.6 * vn * nz
+        }
+      }
     }
 
     if (g.current) {

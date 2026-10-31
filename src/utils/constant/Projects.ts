@@ -24,6 +24,18 @@ export const projects: IProject[] = [
     stack: ['HTML', 'CSS', 'JavaScript'],
   },
   {
+    title: 'Album X RPL 4',
+    image: 'kenangan.png',
+    deskripsi: {
+      en: 'A digital space where every moment of laughter, struggle, and togetherness is neatly preserved. A place where our stories never gather dust with the passage of time—ready to be accessed and replayed whenever you wish.',
+      id: 'Sebuah ruang digital tempat setiap momen tawa, perjuangan, dan kebersamaan tersimpan rapi. Tempat di mana kisah kita tak pernah berdebu oleh waktu—siap diakses kapan saja untuk diputar ulang..',
+    },
+    type: 'web',
+    demo: 'https://pplgku.my.id/',
+    repo: 'https://github.com/rizkyafrino14/album',
+    stack: ['HTML', 'CSS', 'JavaScript'],
+  },
+  {
     title: 'Sekolah Digital',
     image: 'sd.png',
     deskripsi: {

@@ -10,7 +10,7 @@ import type { RouteKey } from './Scene'
 // Three.js menyentuh API browser saat import, jadi hanya dimuat di client.
 const Scene = dynamic(() => import('./Scene'), { ssr: false, loading: () => null })
 
-const ROUTES: RouteKey[] = ['/about', '/education', '/project', '/resume', '/contact']
+const ROUTES: RouteKey[] = ['/about', '/education', '/project', '/resume', '/contact', '/mochi']
 
 function toRoute(pathname: string): RouteKey {
   return ROUTES.find((r) => pathname.startsWith(r)) ?? '/'

@@ -7,6 +7,7 @@ import { Billboard } from '@react-three/drei'
 import * as THREE from 'three'
 import { ball, catCtl, catPos, dot, getCatUi, patchCatUi, type CatActivity } from '@/lib/cat'
 import { makeFur } from './textures'
+import { getMochi, mochiEvent, mochiTime } from '@/lib/mochi'
 import { meow, purr } from '@/lib/audio'
 import { BOUNDS, BOWL_AT, CIRCLES, RECTS, TREE_AT, findPath, losClear, nearestFree } from '@/lib/catNav'
 import type { RouteKey } from './Scene'
@@ -240,7 +241,7 @@ export default function Cat({ dark, route }: { dark: boolean; route: RouteKey })
     const pool = POIS.filter((p) => (night ? ['chair', 'tree', 'rug', 'sun', 'desk'].includes(p.id) : true))
     let poi = pick(pool)
     if (poi.id === s.poi) poi = pick(pool)
-    const sleepy = night ? 0.55 : 0.2
+    const sleepy = getMochi().energy < 25 ? 0.85 : night ? 0.55 : 0.2
     goToPoi(poi, Math.random() < sleepy && poi.acts.includes('sleep') ? 'sleep' : undefined)
   }
 
@@ -286,6 +287,7 @@ export default function Cat({ dark, route }: { dark: boolean; route: RouteKey })
     s.chase = null
     s.petUntil = performance.now() / 1000 + 4
     setAct('pet', 4)
+    mochiEvent('pet')
     meow(0.9 + Math.random() * 0.3)
     purr(2.2)
     for (let i = 0; i < 4; i++) {
@@ -307,6 +309,10 @@ export default function Cat({ dark, route }: { dark: boolean; route: RouteKey })
     const now = performance.now() / 1000
     const ui = getCatUi()
     const { pos } = s
+
+    // waktu tidur / main laser dicatat ke kondisi Mochi
+    if (s.act === 'sleep') mochiTime('sleep', dt)
+    else if (s.act === 'play' && s.chase === 'laser') mochiTime('laser', dt)
 
     // reaksi terhadap perpindahan halaman
     if (s.pendingRoute && !s.jump && now > s.petUntil) {
@@ -332,6 +338,27 @@ export default function Cat({ dark, route }: { dark: boolean; route: RouteKey })
         goToPoint(THREE.MathUtils.clamp(c.x, BOUNDS.x0, BOUNDS.x1), THREE.MathUtils.clamp(c.z, BOUNDS.z0, BOUNDS.z1), 'sit')
         meow(1.1)
       }
+    }
+
+    // tombol "Panggil ke sini" di halaman Mochi: mendekat ke arah kamera
+    if (catCtl.comeHere && !s.jump && now > s.petUntil && !ui.laser) {
+      catCtl.comeHere = false
+      const cam = state.camera.position
+      const dx = cam.x - pos.x
+      const dz = cam.z - pos.z
+      const len = Math.hypot(dx, dz) || 1
+      const gx = THREE.MathUtils.clamp(cam.x - (dx / len) * 1.5, BOUNDS.x0, BOUNDS.x1)
+      const gz = THREE.MathUtils.clamp(cam.z - (dz / len) * 1.5, BOUNDS.z0, BOUNDS.z1)
+      const [fx, fz] = nearestFree(gx, gz)
+      goToPoint(fx, fz, 'sit')
+      meow(1.15)
+    }
+
+    // tombol "Tidurkan": menuju tempat nyaman lalu tidur
+    if (catCtl.nap && !s.jump && !ui.laser) {
+      catCtl.nap = false
+      const cozy = POIS.filter((p) => ['chair', 'tree', 'rug', 'sun'].includes(p.id))
+      goToPoi(pick(cozy), 'sleep')
     }
 
     // laser menang atas segalanya
@@ -400,6 +427,7 @@ export default function Cat({ dark, route }: { dark: boolean; route: RouteKey })
           if (s.act !== 'play') setAct('play', 999)
           if (s.chase === 'ball' && now > s.batAt) {
             s.batAt = now + 0.9
+            mochiEvent('bat')
             const a = s.yaw + rand(-0.6, 0.6)
             ball.vx = Math.sin(a) * rand(1.6, 2.6)
             ball.vz = Math.cos(a) * rand(1.6, 2.6)
@@ -459,6 +487,7 @@ export default function Cat({ dark, route }: { dark: boolean; route: RouteKey })
       s.timer -= dt
       if (s.act === 'eat' && now > s.eatUntil && getCatUi().food) {
         patchCatUi({ food: false })
+        mochiEvent('fed')
         s.hearts.push({ life: 0, x: 0, y: 0.5, z: 0 }, { life: -0.2, x: 0.05, y: 0.5, z: 0 })
         meow(1.15)
       }
@@ -612,30 +641,30 @@ export default function Cat({ dark, route }: { dark: boolean; route: RouteKey })
     }
   })
 
-  /* --- model ---------------------------------------------------------- */
+  /* --- model (gaya imut: kepala besar bulat, mata besar, badan gemuk) ---- */
   const fur = useMemo(() => makeFur(), [])
   const M = useMemo(() => {
     const sheen = { sheen: 1, sheenColor: new THREE.Color('#ffd9b0'), sheenRoughness: 0.55 }
     return {
       body: new THREE.MeshPhysicalMaterial({ map: fur, roughness: 0.92, ...sheen }),
-      orange: new THREE.MeshPhysicalMaterial({ color: '#e39a52', roughness: 0.92, ...sheen }),
-      dark: new THREE.MeshPhysicalMaterial({ color: '#a8561a', roughness: 0.95, ...sheen }),
-      white: new THREE.MeshPhysicalMaterial({ color: '#fff4e4', roughness: 0.92, ...sheen }),
-      pink: new THREE.MeshStandardMaterial({ color: '#f2a1ad', roughness: 0.6 }),
-      earIn: new THREE.MeshStandardMaterial({ color: '#f0a9b4', roughness: 0.8 }),
-      iris: new THREE.MeshStandardMaterial({ color: '#8fd14f', roughness: 0.25, emissive: '#3c7a12', emissiveIntensity: 0.25 }),
-      rim: new THREE.MeshBasicMaterial({ color: '#3d2410' }),
-      pupil: new THREE.MeshBasicMaterial({ color: '#0d0907' }),
+      orange: new THREE.MeshPhysicalMaterial({ color: '#eba15a', roughness: 0.92, ...sheen }),
+      dark: new THREE.MeshPhysicalMaterial({ color: '#b8641f', roughness: 0.95, ...sheen }),
+      white: new THREE.MeshPhysicalMaterial({ color: '#fff6ea', roughness: 0.92, ...sheen }),
+      pink: new THREE.MeshStandardMaterial({ color: '#f59fae', roughness: 0.6 }),
+      earIn: new THREE.MeshStandardMaterial({ color: '#f7b4bf', roughness: 0.8 }),
+      blush: new THREE.MeshBasicMaterial({ color: '#ff8fa3', transparent: true, opacity: 0.55, depthWrite: false }),
+      iris: new THREE.MeshStandardMaterial({ color: '#c98a2a', roughness: 0.25, emissive: '#8a5a10', emissiveIntensity: 0.2 }),
+      pupil: new THREE.MeshBasicMaterial({ color: '#100a06' }),
       shine: new THREE.MeshBasicMaterial({ color: '#ffffff', toneMapped: false }),
-      whisker: new THREE.MeshBasicMaterial({ color: '#fffaf0' }),
+      whisker: new THREE.MeshBasicMaterial({ color: '#fffaf0', transparent: true, opacity: 0.9 }),
     }
   }, [fur])
 
   const legPos: [number, number, number][] = [
-    [0.07, -0.025, 0.15],
-    [-0.07, -0.025, 0.15],
-    [0.075, -0.03, -0.15],
-    [-0.075, -0.03, -0.15],
+    [0.072, -0.025, 0.13],
+    [-0.072, -0.025, 0.13],
+    [0.078, -0.03, -0.125],
+    [-0.078, -0.03, -0.125],
   ]
 
   return (
@@ -653,7 +682,7 @@ export default function Cat({ dark, route }: { dark: boolean; route: RouteKey })
         </mesh>
 
         <group ref={body}>
-          {/* badan: bola lonjong, kutub di sumbu panjang agar belang melintang */}
+          {/* badan: bulat gemuk, kutub di sumbu panjang agar belang melintang */}
           <mesh
             ref={(el) => {
               hull.current[0] = el
@@ -661,16 +690,16 @@ export default function Cat({ dark, route }: { dark: boolean; route: RouteKey })
             castShadow
             receiveShadow
             rotation={[Math.PI / 2, 0, 0]}
-            scale={[0.122, 0.235, 0.115]}
+            scale={[0.128, 0.2, 0.122]}
             material={M.body}
           >
             <sphereGeometry args={[1, 40, 28]} />
           </mesh>
-          {/* bahu & dada: membulatkan siluet depan */}
-          <mesh castShadow position={[0, 0.0, 0.15]} scale={[0.112, 0.108, 0.1]} material={M.orange}>
+          {/* dada & bahu */}
+          <mesh castShadow position={[0, 0.0, 0.13]} scale={[0.115, 0.11, 0.1]} material={M.orange}>
             <sphereGeometry args={[1, 28, 22]} />
           </mesh>
-          <mesh position={[0, -0.04, 0.2]} scale={[0.07, 0.088, 0.07]} material={M.white}>
+          <mesh position={[0, -0.04, 0.18]} scale={[0.075, 0.09, 0.07]} material={M.white}>
             <sphereGeometry args={[1, 24, 18]} />
           </mesh>
           {/* paha belakang */}
@@ -681,130 +710,116 @@ export default function Cat({ dark, route }: { dark: boolean; route: RouteKey })
                 hull.current[i + 1] = el
               }}
               castShadow
-              position={[sx * 0.086, -0.012, -0.125]} scale={[0.074, 0.112, 0.115]} material={M.orange}>
+              position={[sx * 0.09, -0.012, -0.108]}
+              scale={[0.08, 0.116, 0.115]}
+              material={M.orange}
+            >
               <sphereGeometry args={[1, 26, 20]} />
             </mesh>
           ))}
-          {/* leher: menyambung badan dan kepala */}
-          <mesh castShadow position={[0, 0.07, 0.205]} scale={[0.078, 0.082, 0.085]} material={M.orange}>
+          {/* leher */}
+          <mesh castShadow position={[0, 0.07, 0.18]} scale={[0.085, 0.085, 0.085]} material={M.orange}>
             <sphereGeometry args={[1, 22, 18]} />
           </mesh>
 
-          {/* kepala */}
-          <group ref={head} position={[0, 0.11, 0.268]}>
-            <mesh castShadow scale={[0.1, 0.086, 0.092]} material={M.orange}>
-              <sphereGeometry args={[1, 34, 26]} />
+          {/* kepala: besar & bulat (skala 1.22) */}
+          <group ref={head} position={[0, 0.112, 0.245]} scale={1.22}>
+            <mesh castShadow scale={[0.1, 0.088, 0.094]} material={M.orange}>
+              <sphereGeometry args={[1, 36, 28]} />
             </mesh>
-            {/* pipi berbulu */}
+            {/* pipi gembul */}
             {[-1, 1].map((sx) => (
               <group key={sx}>
-                <mesh position={[sx * 0.058, -0.028, 0.04]} scale={[0.042, 0.036, 0.042]} material={M.orange}>
+                <mesh position={[sx * 0.062, -0.024, 0.03]} scale={[0.046, 0.04, 0.046]} material={M.orange}>
                   <sphereGeometry args={[1, 20, 16]} />
                 </mesh>
-                <mesh position={[sx * 0.078, -0.038, 0.045]} scale={[0.02, 0.016, 0.026]} material={M.white}>
+                <mesh position={[sx * 0.072, -0.012, 0.05]} rotation={[0, sx * 0.5, 0]} scale={[0.017, 0.011, 0.006]} material={M.blush}>
                   <sphereGeometry args={[1, 12, 10]} />
                 </mesh>
               </group>
             ))}
-            {/* moncong, dagu, bantalan kumis */}
-            <mesh position={[0, -0.034, 0.076]} scale={[0.05, 0.034, 0.038]} material={M.white}>
+            {/* moncong kecil putih */}
+            <mesh position={[0, -0.03, 0.068]} scale={[0.04, 0.028, 0.032]} material={M.white}>
               <sphereGeometry args={[1, 22, 16]} />
             </mesh>
-            <mesh position={[0, -0.058, 0.066]} scale={[0.03, 0.02, 0.03]} material={M.white}>
-              <sphereGeometry args={[1, 16, 12]} />
-            </mesh>
-            {[-1, 1].map((sx) => (
-              <mesh key={sx} position={[sx * 0.026, -0.034, 0.092]} scale={[0.019, 0.016, 0.016]} material={M.white}>
-                <sphereGeometry args={[1, 12, 10]} />
-              </mesh>
-            ))}
-            {/* hidung & mulut */}
-            <mesh position={[0, -0.014, 0.11]} scale={[0.015, 0.011, 0.011]} material={M.pink}>
+            {/* hidung kecil & senyum */}
+            <mesh position={[0, -0.011, 0.094]} scale={[0.011, 0.008, 0.008]} material={M.pink}>
               <sphereGeometry args={[1, 12, 10]} />
             </mesh>
-            <mesh position={[0, -0.033, 0.108]} material={M.pupil}>
-              <boxGeometry args={[0.003, 0.02, 0.003]} />
+            <mesh position={[0, -0.025, 0.094]} material={M.pupil}>
+              <boxGeometry args={[0.002, 0.012, 0.002]} />
             </mesh>
             {[-1, 1].map((sx) => (
-              <mesh key={sx} position={[sx * 0.012, -0.042, 0.104]} rotation={[0, 0, sx * 0.9]} material={M.pupil}>
-                <boxGeometry args={[0.003, 0.02, 0.003]} />
-              </mesh>
-            ))}
-            {/* belang dahi (huruf M khas tabby) */}
-            {[-0.024, 0, 0.024].map((x, i) => (
-              <mesh key={x} position={[x, 0.064, 0.04]} rotation={[0.5, 0, (i - 1) * 0.2]} scale={[0.005, 0.022, 0.005]} material={M.dark}>
-                <sphereGeometry args={[1, 8, 6]} />
+              <mesh key={sx} position={[sx * 0.0085, -0.032, 0.092]} rotation={[0, 0, sx * -0.75]} material={M.pupil}>
+                <boxGeometry args={[0.0022, 0.0165, 0.002]} />
               </mesh>
             ))}
 
-            {/* telinga: segitiga membulat dengan bagian dalam pink & bulu putih */}
+            {/* telinga membulat, kecil, berjauhan */}
             {[-1, 1].map((sx, i) => (
               <group
                 key={sx}
                 ref={(el) => {
                   ears.current[i] = el
                 }}
-                position={[sx * 0.062, 0.078, -0.01]}
+                position={[sx * 0.068, 0.07, -0.004]}
                 rotation={[-0.15, sx * 0.22, -sx * 0.3]}
               >
-                <mesh castShadow scale={[1, 1, 0.45]} material={M.orange}>
-                  <coneGeometry args={[0.056, 0.13, 3]} />
+                <mesh castShadow scale={[1, 1, 0.5]} material={M.orange}>
+                  <coneGeometry args={[0.05, 0.096, 14]} />
                 </mesh>
-                <mesh position={[0, -0.01, 0.014]} scale={[0.66, 0.72, 0.4]} material={M.earIn}>
-                  <coneGeometry args={[0.056, 0.13, 3]} />
-                </mesh>
-                <mesh position={[0, -0.03, 0.02]} scale={[0.5, 0.35, 0.3]} material={M.white}>
-                  <sphereGeometry args={[0.03, 10, 8]} />
+                <mesh position={[0, -0.008, 0.012]} scale={[0.64, 0.7, 0.45]} material={M.earIn}>
+                  <coneGeometry args={[0.05, 0.096, 14]} />
                 </mesh>
               </group>
             ))}
 
-            {/* mata dengan garis tepi, pupil celah, dan kilau */}
+            {/* mata besar bulat: pupil hitam besar + dua kilau */}
             {[-1, 1].map((sx, i) => (
               <group
                 key={sx}
                 ref={(el) => {
                   eyes.current[i] = el
                 }}
-                position={[sx * 0.04, 0.014, 0.074]}
-                rotation={[0, sx * 0.4, 0]}
+                position={[sx * 0.047, 0.002, 0.075]}
+                rotation={[0, sx * 0.25, 0]}
               >
-                <mesh scale={[0.029, 0.033, 0.012]} material={M.rim}>
+                <mesh scale={[0.031, 0.035, 0.012]} material={M.iris}>
+                  <sphereGeometry args={[1, 24, 18]} />
+                </mesh>
+                <mesh position={[0, 0, 0.004]} scale={[0.022, 0.026, 0.01]} material={M.pupil}>
                   <sphereGeometry args={[1, 20, 16]} />
                 </mesh>
-                <mesh position={[0, 0, 0.004]} scale={[0.026, 0.03, 0.013]} material={M.iris}>
-                  <sphereGeometry args={[1, 20, 16]} />
+                <mesh position={[0.009, 0.012, 0.013]} scale={[0.0095, 0.0095, 0.004]} material={M.shine}>
+                  <sphereGeometry args={[1, 10, 8]} />
                 </mesh>
-                <mesh position={[0, 0, 0.011]} scale={[0.0075, 0.025, 0.005]} material={M.pupil}>
-                  <sphereGeometry args={[1, 12, 10]} />
-                </mesh>
-                <mesh position={[0.008, 0.011, 0.015]} scale={[0.006, 0.006, 0.0035]} material={M.shine}>
+                <mesh position={[-0.009, -0.011, 0.012]} scale={[0.0045, 0.0045, 0.003]} material={M.shine}>
                   <sphereGeometry args={[1, 8, 6]} />
                 </mesh>
               </group>
             ))}
 
-            {/* kumis */}
+            {/* kumis tipis */}
             {[-1, 1].map((sx) =>
-              [0.012, 0, -0.012].map((y, k) => (
+              [0.01, -0.002, -0.014].map((y, k) => (
                 <mesh
                   key={`${sx}${k}`}
-                  position={[sx * 0.078, -0.03 + y, 0.075]}
-                  rotation={[0, sx * (0.35 + k * 0.1), sx * (0.15 - k * 0.12)]}
+                  position={[sx * 0.082, -0.026 + y, 0.062]}
+                  rotation={[0, sx * (0.4 + k * 0.1), sx * (0.12 - k * 0.12)]}
                   material={M.whisker}
                 >
-                  <boxGeometry args={[0.07, 0.0012, 0.0012]} />
+                  <boxGeometry args={[0.07, 0.001, 0.001]} />
                 </mesh>
               )),
             )}
           </group>
 
           {/* ekor: 5 ruas meruncing, bercincin, ujung putih */}
-          <group position={[0, 0.03, -0.285]}>
+          <group position={[0, 0.03, -0.25]}>
             <TailSeg i={0} refs={tail} mats={[M.orange, M.dark, M.white]} />
           </group>
 
-          {/* kaki: paha tebal meruncing + siku + telapak putih */}
+          {/* kaki pendek gemuk + telapak putih bulat */}
           {legPos.map((lp, i) => (
             <group
               key={i}
@@ -813,13 +828,13 @@ export default function Cat({ dark, route }: { dark: boolean; route: RouteKey })
                 legs.current[i] = el
               }}
             >
-              <mesh position={[0, -0.01, 0]} scale={[0.04, 0.04, 0.04]} material={M.orange}>
+              <mesh position={[0, -0.01, 0]} scale={[0.044, 0.044, 0.044]} material={M.orange}>
                 <sphereGeometry args={[1, 16, 12]} />
               </mesh>
-              <mesh position={[0, -0.075, 0]} castShadow material={M.orange}>
-                <cylinderGeometry args={[0.036, 0.026, 0.14, 16]} />
+              <mesh position={[0, -0.065, 0]} castShadow material={M.orange}>
+                <cylinderGeometry args={[0.04, 0.03, 0.12, 16]} />
               </mesh>
-              <mesh position={[0, -0.152, 0.012]} scale={[0.036, 0.026, 0.05]} castShadow material={M.white}>
+              <mesh position={[0, -0.128, 0.012]} scale={[0.04, 0.03, 0.052]} castShadow material={M.white}>
                 <sphereGeometry args={[1, 16, 12]} />
               </mesh>
             </group>
@@ -856,7 +871,7 @@ function TailSeg({
   refs: React.MutableRefObject<(THREE.Group | null)[]>
   mats: THREE.Material[]
 }) {
-  const r = 0.031 - i * 0.003
+  const r = 0.032 - i * 0.003
   const tip = i === TAIL_SEGS - 1
   const ring = i % 2 === 1
   return (
@@ -864,10 +879,10 @@ function TailSeg({
       ref={(el) => {
         refs.current[i] = el
       }}
-      position={i === 0 ? [0, 0, 0] : [0, 0, -0.052]}
+      position={i === 0 ? [0, 0, 0] : [0, 0, -0.05]}
     >
-      <mesh position={[0, 0, -0.026]} rotation={[Math.PI / 2, 0, 0]} castShadow material={tip ? mats[2] : ring ? mats[1] : mats[0]}>
-        <capsuleGeometry args={[r, 0.046, 6, 12]} />
+      <mesh position={[0, 0, -0.025]} rotation={[Math.PI / 2, 0, 0]} castShadow material={tip ? mats[2] : ring ? mats[1] : mats[0]}>
+        <capsuleGeometry args={[r, 0.044, 6, 12]} />
       </mesh>
       {i < TAIL_SEGS - 1 && <TailSeg i={i + 1} refs={refs} mats={mats} />}
     </group>

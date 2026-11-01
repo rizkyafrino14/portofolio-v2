@@ -1,9 +1,11 @@
 'use client'
 
 import { useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CAT_NAME, feedCat, kickBall, setFollow, setLaser, useCatUi } from '@/lib/cat'
+import { feedCat, kickBall, setFollow, setLaser, useCatUi } from '@/lib/cat'
 import { useT, type TKey } from '@/lib/i18n'
+import { useMochi } from '@/lib/mochi'
 import { useSettings } from '@/lib/settings'
 import { cn } from '@/utils/styles/cn'
 
@@ -15,9 +17,12 @@ export default function CatDock() {
   const t = useT()
   const { quality } = useSettings()
   const ui = useCatUi()
+  const { name } = useMochi()
+  const pathname = usePathname()
   const [open, setOpen] = useState(true)
 
-  if (quality === 'off') return null
+  // halaman Mochi punya kontrol sendiri; dock disembunyikan di sana
+  if (quality === 'off' || pathname.startsWith('/mochi')) return null
 
   const status = t(`cat.s.${ui.activity}` as TKey)
 
@@ -73,7 +78,7 @@ export default function CatDock() {
               >
                 <span className="text-xl">🐱</span>
                 <span className="hidden min-w-0 leading-tight md:block">
-                  <span className="block text-xs font-bold text-ink">{CAT_NAME}</span>
+                  <span className="block text-xs font-bold text-ink">{name}</span>
                   <span className="block max-w-[11rem] truncate text-[11px] text-muted">{status}</span>
                 </span>
               </button>

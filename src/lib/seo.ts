@@ -4,7 +4,7 @@ import type { Metadata } from 'next'
 export const SITE_URL = 'https://rizky.pplgku.my.id'
 export const SITE_NAME = 'Rizky Mustafa Afrino'
 
-export const routes = ['', '/about', '/education', '/project', '/resume', '/contact'] as const
+export const routes = ['', '/about', '/education', '/project', '/resume', '/contact', '/mochi'] as const
 
 /** JSON-LD (schema.org): orang + situs web. */
 export const jsonLd = {

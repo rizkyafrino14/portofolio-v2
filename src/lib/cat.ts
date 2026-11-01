@@ -53,6 +53,10 @@ export const catCtl = {
   call: null as null | { x: number; z: number },
   /** Dorongan ke bola benang yang belum diproses kucing. */
   kick: 0,
+  /** Tombol di halaman Mochi. */
+  comeHere: false,
+  nap: false,
+  photo: false,
 }
 
 export const ball = { x: 0.9, z: -0.4, vx: 0, vz: 0 }
@@ -71,6 +75,19 @@ export function kickBall(dirX?: number, dirZ?: number) {
 
 export const setLaser = (laser: boolean) => patchCatUi({ laser })
 export const feedCat = () => patchCatUi({ food: true })
+
+/** Sudut & jarak kamera saat mengikuti kucing (diatur dari halaman Mochi). */
+export const camView = { dist: 2.4, angle: 0.55 }
+export const rotateCam = (d: number) => {
+  camView.angle += d
+}
+export const zoomCam = (d: number) => {
+  camView.dist = Math.min(3.6, Math.max(1.1, camView.dist + d))
+}
+export const resetCam = () => {
+  camView.dist = 2.4
+  camView.angle = 0.55
+}
 
 /** Posisi kucing saat ini (ditulis oleh Cat tiap frame, dibaca kamera). */
 export const catPos = { x: 0, y: 0, z: 0, yaw: 0 }

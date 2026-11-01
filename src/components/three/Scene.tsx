@@ -8,7 +8,8 @@ import * as THREE from 'three'
 import { crackEgg, resetEgg, useCracks, CRACKS_TO_HATCH } from '@/lib/egg'
 import { playSfx } from '@/lib/settings'
 import { makeCode, makePaper, makeRug, makeSky, makeWood } from './textures'
-import { catCtl, catPos, getCatUi } from '@/lib/cat'
+import { camView, catCtl, catPos, getCatUi } from '@/lib/cat'
+import { getMochi, mochiEvent } from '@/lib/mochi'
 import { useSceneLink } from '@/lib/sceneLink'
 import Cat from './Cat'
 import { Bowl, CatTree, LaserDot, YarnBall } from './Toys'
@@ -16,7 +17,7 @@ import { Bowl, CatTree, LaserDot, YarnBall } from './Toys'
 /* ------------------------------------------------------------------ */
 /* Kamera per halaman                                                  */
 /* ------------------------------------------------------------------ */
-export type RouteKey = '/' | '/about' | '/education' | '/project' | '/resume' | '/contact'
+export type RouteKey = '/' | '/about' | '/education' | '/project' | '/resume' | '/contact' | '/mochi'
 
 type V3 = [number, number, number]
 const CAM: Record<RouteKey, { pos: V3; look: V3 }> = {
@@ -25,7 +26,8 @@ const CAM: Record<RouteKey, { pos: V3; look: V3 }> = {
   '/education': { pos: [3.0, 1.75, 0.3], look: [3.3, 1.75, -4] }, // sertifikat di dinding
   '/project': { pos: [0.15, 1.35, -0.8], look: [0, 1.15, -3.4] }, // monitor
   '/resume': { pos: [1.7, 1.6, -1.1], look: [1.1, 0.85, -3.0] }, // kertas CV di meja
-  '/contact': { pos: [2.0, 1.45, -0.2], look: [5, 1.2, -1.0] }, // jendela & telepon
+  '/contact': { pos: [2.0, 1.45, -0.2], look: [5, 1.2, -1.0] },
+  '/mochi': { pos: [1.5, 1.4, 1.0], look: [0, 0.4, -0.5] }, // cadangan; kamera mengikuti kucing // jendela & telepon
 }
 
 const UP = new THREE.Vector3(0, 1, 0)
@@ -63,10 +65,10 @@ function CameraRig({ route }: { route: RouteKey }) {
     if (mobile) lookT.y -= 0.7
 
     // mode ikuti: kamera menyorot kucing dari dekat
-    if (getCatUi().follow) {
+    if (getCatUi().follow || route === '/mochi') {
       // dari depan-samping agar wajah terlihat
-      const a = catPos.yaw + 0.55
-      posT.set(catPos.x + Math.sin(a) * 1.9, catPos.y + 0.62, catPos.z + Math.cos(a) * 1.9)
+      const a = catPos.yaw + camView.angle
+      posT.set(catPos.x + Math.sin(a) * camView.dist, catPos.y + 0.3 + camView.dist * 0.17, catPos.z + Math.cos(a) * camView.dist)
       lookT.set(catPos.x, catPos.y + (mobile ? 0.1 : 0.3), catPos.z)
     }
 
@@ -79,6 +81,25 @@ function CameraRig({ route }: { route: RouteKey }) {
     camera.position.lerp(posT, k)
     look.current.lerp(lookT, k)
     camera.lookAt(look.current)
+  })
+  return null
+}
+
+/** Mengambil foto dari sudut kamera sekarang saat tombol "Foto" ditekan. */
+function PhotoShot() {
+  useFrame(({ gl, scene, camera }) => {
+    if (!catCtl.photo) return
+    catCtl.photo = false
+    const prev = scene.background
+    scene.background = new THREE.Color('#1b1713') // latar kanvas transparan → isi warna
+    gl.render(scene, camera)
+    const url = gl.domElement.toDataURL('image/png')
+    scene.background = prev
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${getMochi().name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-mochi.png`
+    a.click()
+    mochiEvent('photo')
   })
   return null
 }
@@ -996,6 +1017,7 @@ function Room({ dark, route, low, onToggleTheme }: { dark: boolean; route: Route
       <Bowl />
       <CatTree />
       <LaserDot />
+      <PhotoShot />
       {/* klik lantai = memanggil kucing */}
       <mesh
         rotation={[-Math.PI / 2, 0, 0]}

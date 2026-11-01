@@ -17,6 +17,7 @@ export const navLinks: { key: TKey; href: string }[] = [
   { key: 'nav.projects', href: '/project' },
   { key: 'nav.resume', href: '/resume' },
   { key: 'nav.contact', href: '/contact' },
+  { key: 'nav.mochi', href: '/mochi' },
 ]
 
 export default function Navbar() {

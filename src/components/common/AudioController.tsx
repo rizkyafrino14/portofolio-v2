@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { hydrateSettings, useSettings } from '@/lib/settings'
+import { hydrateMochi } from '@/lib/mochi'
 
 // Sumber musik sama seperti versi sebelumnya.
 const MUSIC_URL =
@@ -14,6 +15,7 @@ export default function AudioController() {
 
   useEffect(() => {
     hydrateSettings()
+    hydrateMochi()
     return () => {
       audio.current?.pause()
     }

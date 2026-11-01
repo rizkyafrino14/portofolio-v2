@@ -119,10 +119,6 @@ export const projects: IProject[] = [
     repo: '',
     stack: ['Android', 'Google Sign-In'],
   },
-    type: 'web',
-    demo: 'none',
-    repo: '',
-  },
   // ➕ Tambah proyek baru di sini
   // type yang valid: 'web' | 'api' | 'mobile' | 'android' | 'ios' | 'flutter'
 ]

@@ -111,13 +111,13 @@ export const projects: IProject[] = [
     title: 'EcoWin',
     image: 'ecowin.png',
     deskripsi: {
-      en: 'EcoWin is an Android digital waste bank app. Sign in with Google to see your balance, deposits, and organic waste activity. Manage waste, protect the future.',
-      id: 'EcoWin adalah aplikasi Android bank sampah digital. Masuk dengan Google untuk melihat saldo, setoran, dan aktivitas organik. Kelola sampah, jaga masa depan.',
+      en: 'EcoWin is a digital waste bank Android app built with Kotlin and powered by a Laravel (PHP) backend. Sign in with Google to see your balance, deposits, and organic waste activity. Manage waste, protect the future.',
+      id: 'EcoWin adalah aplikasi Android bank sampah digital yang dibuat dengan Kotlin dan didukung backend Laravel (PHP). Masuk dengan Google untuk melihat saldo, setoran, dan aktivitas organik. Kelola sampah, jaga masa depan.',
     },
     type: 'android',
     demo: 'none',
-    repo: '',
-    stack: ['Android', 'Google Sign-In'],
+    repo: 'https://github.com/rizkyafrino-max/ecowin',
+    stack: ['Kotlin', 'Android', 'Laravel', 'PHP', 'Google Sign-In'],
   },
   // ➕ Tambah proyek baru di sini
   // type yang valid: 'web' | 'api' | 'mobile' | 'android' | 'ios' | 'flutter'

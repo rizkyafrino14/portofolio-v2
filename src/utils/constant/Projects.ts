@@ -119,6 +119,28 @@ export const projects: IProject[] = [
     repo: 'https://github.com/rizkyafrino-max/ecowin',
     stack: ['Kotlin', 'Android', 'Laravel', 'PHP', 'Google Sign-In'],
   },
+  {
+    title: 'HaditsKu',
+    image: 'hadisku.png',
+    deskripsi: {
+      en: 'HaditsKu is a digital hadith portal: search hadith, browse by category (prayer, fasting, Ramadan, charity, character), and use handy tools like notes, Surah Yasin, and prayers.',
+      id: 'HaditsKu adalah portal hadits digital: cari hadits, jelajahi per kategori (shalat, puasa, Ramadhan, sedekah, akhlak), dan gunakan fitur Catatan, Surah Yasin, serta Doa.',
+    },
+    type: 'web',
+    demo: 'https://hadiskuweb.vercel.app/',
+    repo: '',
+  },
+  {
+    title: 'Yearbook IX A',
+    image: 'yearbook.jpg',
+    deskripsi: {
+      en: 'A digital yearbook for class IX A of SMP 2 Kaliwungu with a timeline, gallery, quotes, achievements, and class structure, complete with background music.',
+      id: 'Album kenangan digital Kelas IX A SMP 2 Kaliwungu dengan linimasa, galeri, kutipan, prestasi, dan struktur kelas, lengkap dengan musik latar.',
+    },
+    type: 'web',
+    demo: 'https://yearbook-class-9a.vercel.app/halaman-utama.html',
+    repo: '',
+  },
   // ➕ Tambah proyek baru di sini
   // type yang valid: 'web' | 'api' | 'mobile' | 'android' | 'ios' | 'flutter'
 ]

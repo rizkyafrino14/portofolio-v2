@@ -66,8 +66,8 @@ function CameraRig({ route }: { route: RouteKey }) {
     if (getCatUi().follow) {
       // dari depan-samping agar wajah terlihat
       const a = catPos.yaw + 0.55
-      posT.set(catPos.x + Math.sin(a) * 1.55, catPos.y + 0.55, catPos.z + Math.cos(a) * 1.55)
-      lookT.set(catPos.x, catPos.y + (mobile ? -0.1 : 0.2), catPos.z)
+      posT.set(catPos.x + Math.sin(a) * 1.9, catPos.y + 0.62, catPos.z + Math.cos(a) * 1.9)
+      lookT.set(catPos.x, catPos.y + (mobile ? 0.1 : 0.3), catPos.z)
     }
 
     // parallax kursor + dolly scroll yang halus

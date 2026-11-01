@@ -328,6 +328,8 @@ function Monitors({ dark }: { dark: boolean }) {
     '/project/petmig.png',
     '/project/env.png',
     '/project/sd.png',
+    '/project/journey.jpg',
+    '/project/kenangan.jpg',
   ])
   useEffect(() => {
     shots.forEach((t) => (t.colorSpace = THREE.SRGBColorSpace))
@@ -335,7 +337,7 @@ function Monitors({ dark }: { dark: boolean }) {
   const code = useMemo(() => makeCode(4), [])
   const code2 = useMemo(() => makeCode(9), [])
   const { project } = useSceneLink()
-  const names = ['porto.png', 'sampahku.png', 'travel.png', 'petmig.png', 'env.png', 'sd.png']
+  const names = ['porto.png', 'sampahku.png', 'travel.png', 'petmig.png', 'env.png', 'sd.png', 'journey.jpg', 'kenangan.jpg']
   const hovered = project ? shots[names.indexOf(project)] ?? null : null
 
   return (

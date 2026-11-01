@@ -25,7 +25,7 @@ export const projects: IProject[] = [
   },
   {
     title: 'Album X RPL 4',
-    image: 'kenangan.png',
+    image: 'kenangan.jpg',
     deskripsi: {
       en: 'A digital space where every moment of laughter, struggle, and togetherness is neatly preserved. A place where our stories never gather dust with the passage of time—ready to be accessed and replayed whenever you wish.',
       id: 'Sebuah ruang digital tempat setiap momen tawa, perjuangan, dan kebersamaan tersimpan rapi. Tempat di mana kisah kita tak pernah berdebu oleh waktu—siap diakses kapan saja untuk diputar ulang..',
@@ -94,6 +94,29 @@ export const projects: IProject[] = [
     demo: 'https://rizky.pplgku.my.id/',
     repo: 'https://github.com/rizkyafrino14/portofolio-v2',
     stack: ['Next.js', 'TypeScript', 'Three.js'],
+  },
+  {
+    title: 'Journey of Us',
+    image: 'journey.jpg',
+    deskripsi: {
+      en: 'A pixel-art adventure game built with Godot Engine and playable right in the browser. Start the journey and unlock the story chapter by chapter.',
+      id: 'Game petualangan pixel yang dibuat dengan Godot Engine dan bisa dimainkan langsung di browser. Mulai petualangan dan buka ceritanya bab demi bab.',
+    },
+    type: 'web',
+    demo: 'https://j0urney-of-us.netlify.app/',
+    repo: '',
+    stack: ['Godot Engine', 'Pixel Art', 'Game'],
+  },
+  {
+    title: 'Ecowin',
+    image: 'ecowin.png',
+    deskripsi: {
+      en: 'Ecowin: a digital waste bank (bank sampah digital) project.',
+      id: 'Ecowin: proyek bank sampah digital.',
+    },
+    type: 'web',
+    demo: 'none',
+    repo: '',
   },
   // ➕ Tambah proyek baru di sini
   // type yang valid: 'web' | 'api' | 'mobile' | 'android' | 'ios' | 'flutter'

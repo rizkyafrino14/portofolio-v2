@@ -141,6 +141,17 @@ export const projects: IProject[] = [
     demo: 'https://yearbook-class-9a.vercel.app/halaman-utama.html',
     repo: '',
   },
+  {
+    title: 'Git & GitHub Kids Lab',
+    image: 'belajar-git.jpg',
+    deskripsi: {
+      en: 'An interactive learning site for Git & GitHub: 11 beginner-friendly modules, a quiz, a command playground, XP and badges, with progress saved on your device.',
+      id: 'Situs belajar Git & GitHub yang interaktif: 11 modul ramah pemula, kuis, playground perintah, XP dan badge, dengan progres tersimpan di perangkat.',
+    },
+    type: 'web',
+    demo: 'https://belajar-git-plum.vercel.app/',
+    repo: '',
+  },
   // ➕ Tambah proyek baru di sini
   // type yang valid: 'web' | 'api' | 'mobile' | 'android' | 'ios' | 'flutter'
 ]
